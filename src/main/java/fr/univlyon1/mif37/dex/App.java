@@ -11,10 +11,16 @@ public class App {
 
     public static void main(String[] args) throws ParseException {
         MappingParser mp = new MappingParser(System.in);
+
         Mapping mapping = mp.mapping();
         LOG.info("Parsed {} edb(s), {} idb(s) and {} tgd(s).",
                 mapping.getEDB().size(),
                 mapping.getIDB().size(),
                 mapping.getTgds().size());
+
+        System.out.println("FAIT!");
+        /* Por arrêter Ctrl +  D*/
+
+
     }
 }
