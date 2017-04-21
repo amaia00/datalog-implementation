@@ -72,7 +72,25 @@ public class App {
         System.out.println();
         System.out.println();
 
-        System.out.println(Stratified.ExtendedSafetyCondition(edbs, tgds));
+        /* Pour tester si a la condition safety extended*/
+        System.out.print("Le programme a la condition safetyExtended? ");
+        System.out.print(Stratified.isSemiPositif(edbs, tgds));
+
+        System.out.println();
+        System.out.println();
+
+        /* Pour tester si c'est stratifie*/
+        System.out.print("Le programme est stratifie? ");
+        System.out.print(Stratified.isStratified(mapping));
+
+        System.out.println();
+        System.out.println();
+
+        /* Pour tester si c'est positif */
+        System.out.print("Le programme est positif? ");
+        System.out.print(Stratified.isPositif(mapping));
+
+
         Stratified.Stratification(edbs, idbs, tgds);
 
         /* Por arrêter Ctrl +  D*/
