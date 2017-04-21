@@ -61,7 +61,7 @@ public class App {
             tgd.getRight().getVars().forEach(v -> System.out.print(v.getName() + ", "));
             System.out.print(") :- ");
 
-            tgd.getLeft().stream().forEach(l -> {
+            tgd.getLeft().forEach(l -> {
                 System.out.print(l.getFlag() + " " + l.getAtom().getName() + " (");
                 l.getAtom().getVars().forEach(v -> System.out.print(v.getName() + ", "));
                 System.out.print("), ");
