@@ -1,6 +1,9 @@
 package fr.univlyon1.mif37.dex.utils;
 
+import fr.univlyon1.mif37.dex.mapping.Mapping;
 import fr.univlyon1.mif37.dex.mapping.Tgd;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Amaia Nazábal
@@ -9,12 +12,54 @@ import fr.univlyon1.mif37.dex.mapping.Tgd;
  */
 public class Stratified {
 
-    public static boolean allVariablesInBody(Tgd tgd) {
-        //tgd.getRight().getVars().
-        //tgd.getLeft().stream().anyMatch()
+    /**
+     *
+     * @param mapping
+     * @return
+     */
+    public static boolean safeConfition(Mapping mapping) {
 
-        // tgd.getRight().getVars().forEach(v -> tgd.getLeft().stream().anyMatch(l -> l.getAtom().getVars().stream().anyMatch(v.getName())));
+        AtomicBoolean safeConfition = new AtomicBoolean();
+        safeConfition.set(true);
+        mapping.getTgds().forEach(tgd -> {
+            if (!tgd.isSafe()) {
+                safeConfition.set(false);
+            }
+        });
+
+        return safeConfition.get();
+    }
+
+    public static boolean isSemiPositif(Tgd tgd) {
         return false;
     }
+
+    /**
+     *
+     * @return
+     */
+    public static boolean safeExtendedCondition() {
+        return false;
+    }
+
+    /**
+     *
+     * @param mapping
+     * @return
+     */
+    public static boolean isStratified(Mapping mapping) {
+        return (safeConfition(mapping) && safeExtendedCondition());
+    }
+
+    public static Mapping fromSemipositiveToPositive(Mapping mapping) {
+        mapping.getTgds().forEach(tgd -> {
+            if (isSemiPositif(tgd)) {
+
+            }
+        });
+
+        return mapping;
+    }
+
 
 }

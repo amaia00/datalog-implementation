@@ -23,38 +23,53 @@ public class App {
                 mapping.getTgds().size());
 
         /* get EDBs*/
-        System.out.println("---- EDBs ----");
+        System.out.println("EDB: ");
         Collection<Relation> edbs = mapping.getEDB();
         for (Relation edb : edbs) {
-            System.out.println(edb.getName());
+            System.out.println();
+            System.out.print(edb.getName() + "(");
             List<String> attributs = Arrays.asList(edb.getAttributes());
-            attributs.forEach(p -> System.out.println(p));
+            attributs.forEach(p -> System.out.print(p + ", "));
+            System.out.print(")");
         }
 
         System.out.println();
         System.out.println();
 
         /* get IDBS*/
-        System.out.println("---- IDBS ----");
+        System.out.println("IDB: ");
         Collection<AbstractRelation> idbs = mapping.getIDB();
         for (AbstractRelation idb : idbs) {
-            System.out.println(idb.getName());
+            System.out.println();
+            System.out.print(idb.getName() + "(");
+
             List<AbstractArgument> attributs = Arrays.asList(idb.getAttributes());
-            attributs.forEach(p -> System.out.print(p.getAtt() + "  " + p.getVar().getName() + "  - "));
+            attributs.forEach(p -> System.out.print(p.getVar().getName() + ","));
+            System.out.print(")");
         }
         System.out.println();
         System.out.println();
+
 
         /* get TGBS*/
-        System.out.println("---- TGBS ----");
+        System.out.println("TGBS:");
         Collection<Tgd> tgds = mapping.getTgds();
         for (Tgd tgd : tgds) {
-            System.out.println("Head: " + tgd.getRight().getName());
-            System.out.println("Body: ");
+            System.out.println();
+            System.out.print(tgd.getRight().getName() + "(");
+            tgd.getRight().getVars().forEach(v -> System.out.print(v.getName() + ", "));
+            System.out.print(") :- ");
 
-            tgd.getLeft().stream().forEach(l -> System.out.println(l.getAtom().getName() + " - "));
+            tgd.getLeft().stream().forEach(l -> {
+                System.out.print(l.getFlag() + " " + l.getAtom().getName() + " (");
+                l.getAtom().getVars().forEach(v -> System.out.print(v.getName() + ", "));
+                System.out.print("), ");
+            });
         }
 
+
+        System.out.println();
+        System.out.println();
 
 
 
