@@ -1,4 +1,4 @@
--- Example positif
+-- Example stratified
 
 EDB
 
@@ -15,5 +15,5 @@ MAPPING
 link ($x,$y) -> metro($x)
 link ($x,$y) -> metro($y)
 link ($x,$y) -> reachable ($x,$y)
-link ($x,$z), reachable ($z,$y) -> reachable ($x,$y)
+NEG metro ($x), reachable ($z,$y) -> reachable ($x,$y)
 
