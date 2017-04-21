@@ -73,6 +73,7 @@ public class App {
         System.out.println();
 
         System.out.println(Stratified.ExtendedSafetyCondition(edbs, tgds));
+        Stratified.Stratification(edbs, idbs, tgds);
 
         /* Por arrêter Ctrl +  D*/
 
