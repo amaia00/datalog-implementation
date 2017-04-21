@@ -3,6 +3,7 @@ package fr.univlyon1.mif37.dex;
 import fr.univlyon1.mif37.dex.mapping.*;
 import fr.univlyon1.mif37.dex.parser.MappingParser;
 import fr.univlyon1.mif37.dex.parser.ParseException;
+import fr.univlyon1.mif37.dex.utils.Stratified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +53,10 @@ public class App {
             System.out.println("Head: " + tgd.getRight().getName());
             System.out.println("Body: ");
 
-            tgd.getLeft().stream().forEach(l -> System.out.println(l.getAtom().getName() + " - "));
+            tgd.getLeft().stream().forEach(l -> System.out.println(l.getAtom().getName() +" - "));
         }
 
-
+        System.out.println(Stratified.ExtendedSafetyCondition(edbs,tgds));
 
 
         /* Por arrêter Ctrl +  D*/
