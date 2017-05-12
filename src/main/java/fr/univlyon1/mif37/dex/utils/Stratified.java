@@ -1,11 +1,12 @@
 package fr.univlyon1.mif37.dex.utils;
 
+
 import fr.univlyon1.mif37.dex.mapping.*;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Amaia Nazábal
@@ -13,6 +14,11 @@ import java.util.Collection;
  * @since 1.0 4/21/17.
  */
 public class Stratified {
+
+    private Stratified() {
+        /* On cache le constructeur*/
+    }
+
 
     /**
      * Que dans la règle on ne trouve pas des variables dans le head qui ne sont pas dans le corps,
@@ -23,27 +29,28 @@ public class Stratified {
      */
     public static boolean safeConfition(Mapping mapping) {
 
-        AtomicBoolean safeConfition = new AtomicBoolean();
-        safeConfition.set(true);
+        AtomicBoolean condition = new AtomicBoolean();
+        condition.set(true);
+
         mapping.getTgds().forEach(tgd -> {
             if (!tgd.isSafe()) {
-                safeConfition.set(false);
+                condition.set(false);
             }
         });
 
-        return safeConfition.get();
+        return condition.get();
     }
 
 
     /**
      * Un programme c'est positif si aucun règle dans les tdgb sont negatifs.
-     *
+     * <p>
      * Ref: Example1.txt
      *
      * @param mapping le mapping du programme
      * @return si c'est ou pas positif
      */
-    public static boolean isPositif (Mapping mapping) {
+    public static boolean isPositif(Mapping mapping) {
         AtomicBoolean positif = new AtomicBoolean();
         positif.set(true);
         mapping.getTgds().forEach(tgd -> {
@@ -85,7 +92,7 @@ public class Stratified {
     /**
      * C'est stratified si il a une negation dans le corps de'une regle d'une autre regle qui a été
      * définie avant
-     *
+     * <p>
      * Ref:
      *
      * @param mapping du programme
@@ -96,9 +103,9 @@ public class Stratified {
         stratified.set(false);
 
         if (mapping.getTgds().stream().anyMatch(tgd ->
-            tgd.getLeft().stream().anyMatch(l ->
-                    !l.getFlag() && mapping.getTgds().stream()
-                            .anyMatch(tgd1 -> tgd1.getRight().getName().equals(l.getAtom().getName())))
+                tgd.getLeft().stream().anyMatch(l ->
+                        !l.getFlag() && mapping.getTgds().stream()
+                                .anyMatch(tgd1 -> tgd1.getRight().getName().equals(l.getAtom().getName())))
         )) {
             stratified.set(true);
         }
@@ -127,83 +134,98 @@ public class Stratified {
     /**
      * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié
      * Ref: Example2.txt
-     * @param edbs
-     * @param tgds
+     *
+     * @param edbs les faits du programme
+     * @param tgds les regles du programme
      * @return si le programme est ou pas semipositif
      */
-    public static boolean isSemiPositif(Collection<Relation> edbs, Collection<Tgd> tgds){
+    public static boolean isSemiPositif(Collection<Relation> edbs, Collection<Tgd> tgds) {
+
         for (Relation edb : edbs) {
+            boolean isTrue = false;
+            boolean isFalse = false;
             String fact = edb.getName();
-            boolean is_true = false;
-            boolean is_false = false;
+
             for (Tgd tgd : tgds) {
                 Collection<Literal> left = tgd.getLeft();
                 for (Literal l : left) {
-                    if(l.getAtom().getName().equals(fact)){
-                        if(l.getFlag()){is_true=true;}else{is_false=true;}
+                    if (l.getAtom().getName().equals(fact)) {
+                        if (l.getFlag()) {
+                            isTrue = true;
+                        } else {
+                            isFalse = true;
+                        }
                     }
                 }
             }
-            if(is_false&&!is_true){return false;}
+
+            if (isFalse && !isTrue) {
+                return false;
+            }
         }
+
         return true;
     }
 
-    public static HashMap createStratum(Collection<Relation> edbs, Collection<AbstractRelation> idbs){
-        HashMap stratum = new HashMap();
-        for (Relation edb : edbs) {
-            stratum.put(edb.getName(), new Integer(1));
-        }
-        for (AbstractRelation idb : idbs) {
-            stratum.put(idb.getName(), new Integer(1));
-        }
-        return stratum;
-    }
+    /**
+     *
+     *
+     * @param stratum la liste de prédicats avec le stratum
+     * @return si on doit continuer l'algo de stratification ou pas.
+     */
+    public static boolean checkCount(Map stratum) throws Exception {
+        int size = stratum.size();
+        Iterator it = stratum.entrySet().iterator();
 
-    public static boolean checkCount(HashMap s){
-        int size = s.size();
-        Iterator it = s.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            if((int)pair.getValue()>size){return false;}
+            Map.Entry pair = (Map.Entry) it.next();
+            if ((int) pair.getValue() > size) {
+                throw new Exception("C'est pas stratifiable");
+            }
         }
         return true;
     }
 
-    public static HashMap Stratification(Collection<Relation> edbs, Collection<AbstractRelation> idbs, Collection<Tgd> tgds){
-        HashMap stratum = createStratum(edbs,idbs);
-        boolean changed = false;
-        do{
-            changed=false;
+    /**
+     *
+     * La stratification vérifié si le programme est stratifiable et retourne la liste
+     * des prédicats avec son stratums
+     *
+     * @param edbs les faits dans le programme
+     * @param idbs le nom des regles
+     * @param tgds les regles du programme
+     * @return le stratum des prédicats
+     */
+    public static Map<String, Integer> stratification(Collection<Relation> edbs, Collection<AbstractRelation> idbs, Collection<Tgd> tgds) throws Exception {
+        Map<String, Integer> stratum = Util.createStratum(edbs, idbs);
+        boolean changed;
+
+        do {
+            changed = false;
             for (Tgd tgd : tgds) {
                 Collection<Literal> left = tgd.getLeft();
-//                System.out.println("=======================");
-//                System.out.println(stratum.toString());
-//                System.out.println(tgd.getRight().getName());
-//                System.out.println(stratum.get(tgd.getRight().getName()));
-//                System.out.println("=======================");
-                int head_val = (int) stratum.get(tgd.getRight().getName());
+                int headVal = stratum.get(tgd.getRight().getName());
                 for (Literal l : left) {
-                    int left_val = (int) stratum.get(l.getAtom().getName());
-                    if(l.getFlag()){
-                        if(left_val>head_val){
-                            stratum.put(tgd.getRight().getName(), left_val);
-                            changed=true;
+                    int leftVal = stratum.get(l.getAtom().getName());
+
+                    if (l.getFlag()) {
+                        if (leftVal > headVal) {
+                            stratum.put(tgd.getRight().getName(), leftVal);
+                            changed = true;
                         }
-                    }else{
-                        if(left_val>=head_val){
-                            stratum.put(tgd.getRight().getName(), left_val+1);
-                            changed=true;
+                    } else {
+
+                        if (leftVal >= headVal) {
+                            stratum.put(tgd.getRight().getName(), leftVal + 1);
+                            changed = true;
                         }
                     }
                 }
             }
-        }while(changed&&checkCount(stratum));
-        System.out.println(stratum.toString());
+        } while (changed && checkCount(stratum));
+
         return stratum;
     }
-
-
 
 
 }

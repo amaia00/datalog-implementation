@@ -1,0 +1,15 @@
+-- Example stratifiable le meme que la prof a donne
+EDB
+q(A)
+s(B)
+t(A)
+
+IDB
+p($x)
+r($x)
+
+MAPPING
+NEG q($x), r($x) -> p($x)
+NEG t($x), q($x) -> p($x)
+s($x), NEG t($x) -> q($x)
+t($x) -> r($x)

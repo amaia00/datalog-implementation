@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class App {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
@@ -90,8 +91,19 @@ public class App {
         System.out.print("Le programme est positif? ");
         System.out.print(Stratified.isPositif(mapping));
 
+        System.out.println();
+        System.out.println();
 
-        Stratified.Stratification(edbs, idbs, tgds);
+        /* Pour recuperer les stratums du programme */
+        Map stratum = null;
+        try {
+            stratum = Stratified.stratification(edbs, idbs, tgds);
+            System.out.println("Les stratums du programme: ");
+            System.out.println(stratum.toString());
+        } catch (Exception e) {
+            System.out.println("Le programme n'est pas stratifiable");
+        }
+
 
         /* Por arrêter Ctrl +  D*/
 
