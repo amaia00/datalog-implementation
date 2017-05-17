@@ -5,6 +5,7 @@ import fr.univlyon1.mif37.dex.parser.MappingParser;
 import fr.univlyon1.mif37.dex.parser.ParseException;
 import fr.univlyon1.mif37.dex.utils.Evaluation;
 import fr.univlyon1.mif37.dex.utils.Stratified;
+import fr.univlyon1.mif37.dex.utils.Translating;
 import fr.univlyon1.mif37.dex.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,6 +145,10 @@ public class App {
             e.printStackTrace();
         }
 
+
+        /* Translating */
+        System.out.println("Translation to SQL:");
+        Translating.translate(edbs);
 
     }
 }
