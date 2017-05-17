@@ -3,14 +3,13 @@ package fr.univlyon1.mif37.dex;
 import fr.univlyon1.mif37.dex.mapping.*;
 import fr.univlyon1.mif37.dex.parser.MappingParser;
 import fr.univlyon1.mif37.dex.parser.ParseException;
+import fr.univlyon1.mif37.dex.utils.Evaluation;
 import fr.univlyon1.mif37.dex.utils.Stratified;
+import fr.univlyon1.mif37.dex.utils.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class App {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
@@ -106,6 +105,44 @@ public class App {
 
 
         /* Por arrêter Ctrl +  D*/
+
+        List<Tgd> tgdByOrderOfEvaluation = new ArrayList<>();
+        try {
+            Map<Integer, List<Object>> slices = Stratified.getSlices(mapping);
+            for (Map.Entry<Integer, List<Object>> slice : slices.entrySet()) {
+                System.out.println(slice.getKey().toString() + ":");
+                List<Object> rules = slice.getValue();
+                rules.forEach(rule -> {
+
+                    try {
+                        Relation edb = (Relation)rule;
+                        System.out.println(Util.getEDBString(edb));
+                    }catch (Exception ex){
+                        //nothing
+                    }
+
+                    try {
+                        Tgd tgd = (Tgd) rule;
+                        tgdByOrderOfEvaluation.add(tgd);
+                        System.out.println(Util.getTgdString(tgd));
+                    }catch (Exception ex) {
+                        //nothing
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        /* Evaluation */
+
+        try {
+            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation);
+            System.out.println("Evaluation positive");
+            newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }

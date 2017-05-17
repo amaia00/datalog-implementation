@@ -3,10 +3,10 @@ package fr.univlyon1.mif37.dex.utils;
 
 import fr.univlyon1.mif37.dex.mapping.*;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Amaia Nazábal
@@ -44,7 +44,7 @@ public class Stratified {
 
     /**
      * Un programme c'est positif si aucun règle dans les tdgb sont negatifs.
-     * <p>
+     * <br/>
      * Ref: Example1.txt
      *
      * @param mapping le mapping du programme
@@ -90,10 +90,10 @@ public class Stratified {
 //    }
 
     /**
-     * C'est stratified si il a une negation dans le corps de'une regle d'une autre regle qui a été
+     * C'est stratified s'il a une negation dans le corps de'une regle d'une autre regle qui a été
      * définie avant
-     * <p>
-     * Ref:
+     * <br/>
+     * Ref: example5.txt
      *
      * @param mapping du programme
      * @return si le programme est stratifié ou pas
@@ -132,7 +132,8 @@ public class Stratified {
 //    }
 
     /**
-     * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié
+     * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié.
+     * <br/>
      * Ref: Example2.txt
      *
      * @param edbs les faits du programme
@@ -168,18 +169,16 @@ public class Stratified {
     }
 
     /**
-     *
+     * Cette méthode compte la quantite des valeurs.
      *
      * @param stratum la liste de prédicats avec le stratum
      * @return si on doit continuer l'algo de stratification ou pas.
      */
-    public static boolean checkCount(Map stratum) throws Exception {
+    private static boolean checkCount(Map<String, Integer> stratum) throws Exception {
         int size = stratum.size();
-        Iterator it = stratum.entrySet().iterator();
 
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            if ((int) pair.getValue() > size) {
+        for (Map.Entry<String, Integer> pair : stratum.entrySet()) {
+            if (pair.getValue() > size) {
                 throw new Exception("C'est pas stratifiable");
             }
         }
@@ -227,5 +226,35 @@ public class Stratified {
         return stratum;
     }
 
+    /**
+     * The stratification induces a partitioning of P into corresponding slices, that depends of the
+     * stratification
+     *
+     * @param mapping tous les faits et règles du programme
+     * @return les slices du programme par ordre
+     */
+    public static Map<Integer, List<Object>> getSlices(Mapping mapping) throws Exception {
+        Map<Integer, List<Object>> slices = new HashMap<>();
+        Map<String, Integer> stratums = stratification(mapping.getEDB(), mapping.getIDB(), mapping.getTgds());
+        stratums = stratums.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (e1, e2) -> e1,
+                            LinkedHashMap::new
+                    ));
+        for (Map.Entry<String, Integer> stratum: stratums.entrySet()) {
+            if (slices.get(stratum.getValue()) == null) {
+                slices.put(stratum.getValue(), Util.getSymbols(mapping.getEDB(), mapping.getTgds(), stratum.getKey()));
+            } else {
+                List<Object> rules = Stream.of(slices.get(stratum.getValue()), Util.getSymbols(mapping.getEDB(),
+                        mapping.getTgds(), stratum.getKey())).flatMap(List::stream).collect(Collectors.toList());
+                slices.put(stratum.getValue(), rules);
+            }
+        }
 
+        return slices;
+    }
 }

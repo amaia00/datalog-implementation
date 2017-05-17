@@ -3,6 +3,7 @@ package fr.univlyon1.mif37.dex.utils;
 import fr.univlyon1.mif37.dex.mapping.AbstractRelation;
 import fr.univlyon1.mif37.dex.mapping.Mapping;
 import fr.univlyon1.mif37.dex.mapping.Relation;
+import fr.univlyon1.mif37.dex.mapping.Tgd;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,25 +16,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Util {
     private static final int ONE = 1;
 
+    private Util() {
+        /* On ajoute un constructeur privé étant donnée qu'il s'agit d'une classe util */
+    }
+
     /**
      * La méthode retourne la liste de constants dans le EDB
      *
      * @param mapping le program qu'on est en train d'evaluer
      * @return la liste de constants
      */
-    static Set<Relation> getAllConstants (Mapping mapping) {
+    static Set<Relation> getAllConstants(Mapping mapping) {
         return new HashSet<>(mapping.getEDB());
     }
 
     /**
-     *
-     *
+     * Cette méthode crée un HashMap avec la valeur '1' pour indiquer l'utilisation du règle au moins une fois.
      *
      * @param edbs les faits dans le programme
      * @param idbs le nom des regles
-     * @return
+     * @return le hashMap avec la valeur 1
      */
-    static Map<String, Integer> createStratum (Collection<Relation> edbs, Collection<AbstractRelation> idbs) {
+    static Map<String, Integer> createStratum(Collection<Relation> edbs, Collection<AbstractRelation> idbs) {
         HashMap<String, Integer> stratum = new HashMap<>();
         for (Relation edb : edbs) {
             stratum.put(edb.getName(), ONE);
@@ -45,102 +49,37 @@ public class Util {
         return stratum;
     }
 
-
-    /**
-     *
-     * Retourne la liste des IDBS + EDBS avec un liste pour calculer la définition de chaque
-     * clause
-     *
-     * @param mapping le programme
-     * @return la liste des clauses
-     */
-    static Map getSymbols (Mapping mapping) {
-        Map<String, Set<Integer>> clauses = new HashMap<>();
-
-        mapping.getEDB().forEach(edb -> clauses.put(edb.getName(), null));
-        mapping.getIDB().forEach(idb -> clauses.put(idb.getName(), null));
-
-        return clauses;
-    }
-
     /**
      * Symbol Definitions. The definition def(s) of a program symbol s is the set of all program clauses that
      * have the symbol p in their head atom.
      *
-     * @param mapping le programme
-     * @param symbol le symbole qu'on est en train de traiter
+     * @param edbs tous les faits du programme
+     * @param tgds  toutes les règles du programme
+     * @param ruleHead le nom de la règle
      * @return la liste de clauses dans laquelle le symbol est présent
      */
-    static Set<Integer> getSymbolDefinition (Mapping mapping, String symbol) {
-        Set<Integer> definition = new HashSet<>();
+    static List<Object> getSymbols(Collection<Relation> edbs, Collection<Tgd> tgds, String ruleHead) {
+        List<Object> symbols = new ArrayList<>();
 
-        AtomicInteger clauseCounter = new AtomicInteger();
-        clauseCounter.set(0);
-        mapping.getEDB().forEach(edb -> {
-            clauseCounter.incrementAndGet();
-            if (edb.getName().equals(symbol))
-                definition.add(clauseCounter.get());
+        tgds.forEach(tgd -> {
+            if (tgd.getRight().getName().equals(ruleHead))
+                symbols.add(tgd);
         });
 
-        mapping.getTgds().forEach(tgd -> {
-            clauseCounter.incrementAndGet();
-            if (tgd.getRight().getName().equals(symbol))
-                definition.add(clauseCounter.get());
-
-            if (tgd.getLeft().stream().anyMatch(l -> l.getAtom().getName().equals(symbol))) {
-                definition.add(clauseCounter.get());
-            }
+        edbs.forEach(edb -> {
+            if (edb.getName().equals(ruleHead))
+                symbols.add(edb);
         });
 
-        return definition;
+        return symbols;
     }
 
-
-//    /**
-//     * WRONG!
-//     *
-//     * @param symbolsDefinitions tous les symbols du programme avec son definition
-//     * @return les slices du programme
-//     */
-////    static Map<Integer, List<String>> getProgramSlices(Map<String, Set<Integer>> symbolsDefinitions,
-//                                                       Map<String, Integer> stratumMap,
-//                                                       Mapping mapping) {
-//        Map<Integer, List<String>> slices = new HashMap<>();
-//        int qteSymbols = 1;
-//
-//        stratumMap.forEach((symbol, stratum) -> {
-////            symbolsDefinitions.forEach((symbol, clauses) -> {
-////                if (clauses.contains(qteSymbols)) {
-////                    List<String> list = slices.get(qteSymbols);
-////                    if (list != null)
-////                        slices.get(qteSymbols).add(symbol);
-////                    else {
-////                        list = new ArrayList<>();
-////                        list.add(symbol);
-////                        slices.put(qteSymbols, list);
-////                    }
-////                }
-////            });
-//
-//            symbolsDefinitions.entrySet().stream().filter(symbolName -> symbol.equals(symbolName.getKey()))
-//                    .findFirst().get().getValue().forEach(clauseNumber -> {
-//                List<String> list = slices.get(symbol);
-//                if (list == null)
-//                    list = new ArrayList<>();
-//
-//                if (clauseNumber <= mapping.getEDB().size()) {
-//                    list.add(mapping.getEDB().)
-//                }
-//
-//
-//            });
-//
-//        });
-//
-//
-//        return slices;
-//    }
-
+    /**
+     * Cette méthode retourne une chaîne de caracteres pour imprimer un fait dans le format datalog
+     *
+     * @param edb un fait du programme
+     * @return la chaîne de caractères
+     */
     public static String getEDBString(Relation edb) {
         StringBuilder toString = new StringBuilder(edb.getName() + "(");
 
@@ -156,11 +95,35 @@ public class Util {
         return toString.toString();
     }
 
+    /**
+     * Cette méthode retourne une chaîne de caracteres pour imprimer une règle dans le format datalog
+     *
+     * @param tgd le règle
+     * @return la chaîne de caractères formatee
+     */
+    public static String getTgdString(Tgd tgd) {
+        StringBuilder toString = new StringBuilder(tgd.getRight().getName() + "(");
 
-    public static void evaluation(Mapping mapping) {
+        tgd.getRight().getVars().forEach(v -> toString.append(v.getName() + ", "));
+        toString.append(") :- ");
 
+        tgd.getLeft().forEach(l -> {
+            toString.append(l.getFlag() + " " + l.getAtom().getName() + " (");
+            l.getAtom().getVars().forEach(v -> toString.append(v.getName() + ", "));
+            toString.append("), ");
+        });
 
+        return toString.toString();
     }
 
 
+    /**
+     *
+     * @param edb
+     * @param possibleFact
+     * @return
+     */
+    public static boolean equalsRelation(Relation edb, Relation possibleFact) {
+        return edb.getAttributes().equals(possibleFact.getAttributes()) & edb.getName().equals(possibleFact.getName());
+    }
 }
