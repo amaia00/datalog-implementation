@@ -153,9 +153,10 @@ public class App {
         /* Evaluation */
 
         try {
-            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
             System.out.println("Evaluation positive");
-            newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
+            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+
+            //newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
         }catch (Exception e) {
             e.printStackTrace();
         }
