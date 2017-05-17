@@ -16,7 +16,7 @@ public class Translating {
 
     public static void translate(Collection<Relation> edbs){
         Map<String, Integer> tables = new HashMap<>();
-        Map<String, String[]> values = new HashMap<>();
+        String values = "";
         for(Relation edb : edbs) {
             if(!tables.containsKey(edb.getName())){
                 tables.put(edb.getName(),edb.getAttributes().length);
@@ -25,16 +25,14 @@ public class Translating {
                     tables.put(edb.getName(),edb.getAttributes().length);
                 }
             }
-            values.put(edb.getName(),edb.getAttributes());
+            values+=createValues(edb.getName(),edb.getAttributes());
         }
         // CREATE Tables Code
         for(Map.Entry<String, Integer> s : tables.entrySet()){
             System.out.println(createTable(s.getKey(),s.getValue()));
         }
         // INSERT values code
-        for(Map.Entry<String, String[]> v : values.entrySet()){
-            System.out.println(v.getKey()+ " == "+ v.getValue().length);
-        }
+        System.out.println(values);
 
     }
 
@@ -46,6 +44,16 @@ public class Translating {
             statement+="\n";
         }
         statement += ");";
+        return statement;
+    }
+
+    public static String createValues(String name, String[] values){
+        String statement = "INSERT INTO "+name+" VALUES (";
+        for (int i = 0; i<values.length;i++){
+            statement+=values[i];
+            if(i!=(values.length-1)){statement+=",";}
+        }
+        statement += ")\n";
         return statement;
     }
 }
