@@ -107,16 +107,26 @@ public class App {
 
         /* Por arrêter Ctrl +  D*/
 
-        List<Tgd> tgdByOrderOfEvaluation = new ArrayList<>();
+        Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = new HashMap<>();
+        Map<Integer, List<Relation>> edbByOrderOfEvaluation = new HashMap<>();
         try {
             Map<Integer, List<Object>> slices = Stratified.getSlices(mapping);
             for (Map.Entry<Integer, List<Object>> slice : slices.entrySet()) {
                 System.out.println(slice.getKey().toString() + ":");
+
                 List<Object> rules = slice.getValue();
                 rules.forEach(rule -> {
 
                     try {
                         Relation edb = (Relation)rule;
+                        if (edbByOrderOfEvaluation.containsKey(slice.getKey())) {
+                            edbByOrderOfEvaluation.get(slice.getKey()).add(edb);
+                        }else {
+                            List<Relation> list = new ArrayList<>();
+                            list.add(edb);
+                            edbByOrderOfEvaluation.put(slice.getKey(), list);
+                        }
+
                         System.out.println(Util.getEDBString(edb));
                     }catch (Exception ex){
                         //nothing
@@ -124,7 +134,13 @@ public class App {
 
                     try {
                         Tgd tgd = (Tgd) rule;
-                        tgdByOrderOfEvaluation.add(tgd);
+                        if (tgdByOrderOfEvaluation.containsKey(slice.getKey()))
+                            tgdByOrderOfEvaluation.get(slice.getKey()).add(tgd);
+                        else {
+                            List<Tgd> list = new ArrayList<>();
+                            list.add(tgd);
+                            tgdByOrderOfEvaluation.put(slice.getKey(), list);
+                        }
                         System.out.println(Util.getTgdString(tgd));
                     }catch (Exception ex) {
                         //nothing
@@ -138,7 +154,7 @@ public class App {
         /* Evaluation */
 
         try {
-            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation);
+            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
             System.out.println("Evaluation positive");
             newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
         }catch (Exception e) {
