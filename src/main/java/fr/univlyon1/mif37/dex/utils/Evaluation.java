@@ -5,6 +5,7 @@ import fr.univlyon1.mif37.dex.mapping.Relation;
 import fr.univlyon1.mif37.dex.mapping.Tgd;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -62,7 +63,7 @@ public class Evaluation {
                 );
 
 
-                Map<String, List<String>> mapConstants = new HashMap<>();
+                NavigableMap<String, List<String>> mapConstants = new TreeMap<>();
                 Map<String, String> mapVariables = new HashMap<>();
 
                 List<Relation> factsByRule = new ArrayList<>();
@@ -71,12 +72,11 @@ public class Evaluation {
 
                 boolean firstTime = true;
 
-                while ((firstTime || newFactsSizeBefore.get() != newFacts.size()) && factsByRule.size() > 0) {
+                while ((firstTime || newFactsSizeBefore.get() != newFacts.size()) && !factsByRule.isEmpty()) {
                     firstTime = false;
                     newFactsSizeBefore.set(newFacts.size());
 
                     /* Cette variable represente le fait utilisé pour deduire la règle */
-                    List<Relation> relationForRule = new ArrayList<>();
                     AtomicReference<Relation> relation = new AtomicReference<>();
                     mapVariables.clear();
 
@@ -85,60 +85,80 @@ public class Evaluation {
                      * On garde dans le map `mapConstants` les règles qui sont dans le corps avec les attributs
                      * qui sont dans le fait
                      */
-                    tgd.getLeft().forEach(literal -> {
-                        List<String> attributes = new ArrayList<>();
+                    AtomicBoolean exhaustiveSearch = new AtomicBoolean();
+                    exhaustiveSearch.set(true);
 
-                        /*
-                         * Pour chaque variable on cherche s'il existe déjà une variable affecté dans la collection
-                         * `mapVariables`, si c'est le cas on l'ajoute dans les attributs, sinon, on cherche une règle
-                         * dans l'EDB qui a toutes les attributes déjà affectés.
-                         *
-                         * TODO Verifier le cas d'une variable au millieu de la règle.
-                         */
-                        AtomicInteger position = new AtomicInteger();
-                        position.set(0);
-                        literal.getAtom().getVars().forEach(variable -> {
-                            if (mapVariables.containsKey(variable.getName())) {
-                                attributes.add(position.get(), mapVariables.get(variable.getName()));
-                            } else {
-                                Optional<Relation> relationOptional = factsByRule.stream()
-                                        .filter(edb -> literal.getAtom().getName()
-                                        .equals(edb.getName()) && Arrays.asList(edb.getAttributes())
-                                        .containsAll(attributes)).findFirst();
+                    while (exhaustiveSearch.get()) {
+                        exhaustiveSearch.set(false);
+                        tgd.getLeft().forEach(literal -> {
+                            List<String> attributes = new ArrayList<>();
 
-                                if (relationOptional.isPresent()) {
-                                    relation.set(relationOptional.get());
-                                    attributes.clear();
-                                    attributes.addAll(Arrays.asList(relation.get().getAttributes()));
-                                } else {
-                                    relation.set(null);
-                                }
-                            }
-                            position.incrementAndGet();
-                        });
-
-                        /*
-                         * Si relation est ça veut dire qu'il n'y a plus des règles à appliquer
-                         */
-                        if (relation.get() != null) {
                             /*
-                         * On ajoute dans la collection de mapConstants la règle avec les constantes qui ont été affectés
-                         * lors de l'inference
-                         * c-a-d au lieu de p(x), on aura p(A)
-                         */
-                            mapConstants.put(literal.getAtom().getName(), attributes);
+                             * Pour chaque variable on cherche s'il existe déjà une variable affecté dans la collection
+                             * `mapVariables`, si c'est le cas on l'ajoute dans les attributs, sinon, on cherche une règle
+                             * dans l'EDB qui a toutes les attributes déjà affectés.
+                             *
+                             * TODO Verifier le cas d'une variable au millieu de la règle.
+                             */
+                            AtomicInteger position = new AtomicInteger();
+                            position.set(0);
+                            literal.getAtom().getVars().forEach(variable -> {
+                                if (mapVariables.containsKey(variable.getName())) {
+                                    attributes.add(position.get(), mapVariables.get(variable.getName()));
+                                } else {
+                                    Optional<Relation> relationOptional = factsByRule.stream()
+                                            .filter(edb -> literal.getAtom().getName()
+                                                    .equals(edb.getName()) && Util.sameOrderAttributes(Arrays.asList(edb.getAttributes()),
+                                                    attributes)).findFirst();
 
-                        /*
-                         * On ajoute dans la collection de mapVariables quelle variables ont été affectés avec quelle valeur
-                         * e.g. $x -> A, $y -> B
-                         */
-                            AtomicInteger index = new AtomicInteger();
-                            index.set(-1);
-                            literal.getAtom().getVars().forEach(var -> mapVariables.put(var.getName(), attributes
-                                    .get(index.incrementAndGet())));
-                        }
+                                    if (relationOptional.isPresent()) {
+                                        relation.set(relationOptional.get());
+                                        attributes.clear();
+                                        attributes.addAll(Arrays.asList(relation.get().getAttributes()));
+                                    } else {
+                                        relation.set(null);
 
-                    });
+                                        Map.Entry<String, List<String>> lastRule = mapConstants.lastEntry();
+                                        if (lastRule != null) {
+                                            factsByRule.removeIf(f -> f.getName().equals(lastRule.getKey())
+                                                    && Util.sameOrderAttributes(Arrays.asList(f.getAttributes()), lastRule.getValue()));
+
+                                            if (factsByRule.stream().anyMatch(f -> f.getName().equals(lastRule.getKey()))) {
+                                                exhaustiveSearch.set(true);
+                                            }
+                                            // TODO: A revoir si on ne peut pas uniquement effacer les derniers entrees
+                                            mapVariables.clear();
+                                            mapConstants.clear();
+                                            attributes.clear();
+                                        }
+                                    }
+                                }
+                                position.incrementAndGet();
+                            });
+
+                            /*
+                             * Si relation est ça veut dire qu'il n'y a plus des règles à appliquer
+                             */
+                            if (relation.get() != null) {
+                            /*
+                             * On ajoute dans la collection de mapConstants la règle avec les constantes qui ont été affectés
+                             * lors de l'inference
+                             * c-a-d au lieu de p(x), on aura p(A)
+                             */
+                                mapConstants.put(literal.getAtom().getName(), attributes);
+
+                            /*
+                             * On ajoute dans la collection de mapVariables quelle variables ont été affectés avec quelle valeur
+                             * e.g. $x -> A, $y -> B
+                             */
+                                AtomicInteger index = new AtomicInteger();
+                                index.set(-1);
+                                literal.getAtom().getVars().forEach(var -> mapVariables.put(var.getName(), attributes
+                                        .get(index.incrementAndGet())));
+                            }
+
+                        });
+                    }
 
                     if (relation.get() != null) {
                         /*

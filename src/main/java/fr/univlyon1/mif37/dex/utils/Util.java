@@ -124,6 +124,27 @@ public class Util {
      * @return
      */
     public static boolean equalsRelation(Relation edb, Relation possibleFact) {
-        return edb.getAttributes().equals(possibleFact.getAttributes()) & edb.getName().equals(possibleFact.getName());
+        return edb.getAttributes().equals(possibleFact.getAttributes()) && edb.getName().equals(possibleFact.getName());
+    }
+
+    public static boolean sameOrderAttributes(List<Object> attributes1, List<String> attributes2) {
+        Iterator<Object> iteratorRelation1 = attributes1.iterator();
+        Iterator<String> iteratorRelation2 = attributes2.iterator();
+
+        while (iteratorRelation1.hasNext()) {
+            String attribute1 = (String) iteratorRelation1.next();
+            String attribute2;
+
+            if (iteratorRelation2.hasNext())
+                attribute2 = iteratorRelation2.next();
+            else
+                return true;
+
+            if (!attribute1.equals(attribute2)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
