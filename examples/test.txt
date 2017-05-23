@@ -1,0 +1,21 @@
+
+
+I1
+link(PartDieu, Debourg, )
+link(PartDieu, Charpennes, )
+link(Charpennes, Perrache, )
+link(Debourg, PartDieu, )
+
+I2
+reachable(Charpennes, Perrache, )
+reachable(PartDieu, Charpennes, )
+reachable(Debourg, PartDieu, )
+reachable(PartDieu, Debourg, )
+
+I3
+reachable(PartDieu, Perrache, )
+reachable(Debourg, Charpennes, )
+reachable(Debourg, Debourg, )
+reachable(Debourg, Perrache, )
+
+reachable(PartDieu, PartDieu)

@@ -3,7 +3,7 @@ package fr.univlyon1.mif37.dex;
 import fr.univlyon1.mif37.dex.mapping.*;
 import fr.univlyon1.mif37.dex.parser.MappingParser;
 import fr.univlyon1.mif37.dex.parser.ParseException;
-import fr.univlyon1.mif37.dex.utils.Evaluation;
+import fr.univlyon1.mif37.dex.utils.EvaluationPositive;
 import fr.univlyon1.mif37.dex.utils.Stratified;
 import fr.univlyon1.mif37.dex.utils.Util;
 import org.slf4j.Logger;
@@ -67,7 +67,6 @@ public class App {
                 System.out.print("), ");
             });
         }
-
 
         System.out.println();
         System.out.println();
@@ -150,12 +149,16 @@ public class App {
             e.printStackTrace();
         }
 
-        /* Evaluation */
+        /* EvaluationPostive */
 
         try {
-            System.out.println("Evaluation positive");
-            Set<Relation> newFacts = Evaluation.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
-
+            System.out.println("EvaluationPostive positive");
+            Set<Relation> newFacts;
+            //if (Stratified.isPositif(mapping))
+                newFacts = EvaluationPositive.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            //else {
+             //   newFacts = EvaluationStratifie.evaluateSemiposifProgram(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            //}
             //newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
         }catch (Exception e) {
             e.printStackTrace();

@@ -1,12 +1,12 @@
 package fr.univlyon1.mif37.dex.utils;
 
 import fr.univlyon1.mif37.dex.mapping.AbstractRelation;
-import fr.univlyon1.mif37.dex.mapping.Mapping;
 import fr.univlyon1.mif37.dex.mapping.Relation;
 import fr.univlyon1.mif37.dex.mapping.Tgd;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author Amaia Nazábal
@@ -23,11 +23,16 @@ public class Util {
     /**
      * La méthode retourne la liste de constants dans le EDB
      *
-     * @param mapping le program qu'on est en train d'evaluer
+     * @param factsByRule tous les faits du programme + ça qu'on a inferer
      * @return la liste de constants
      */
-    static Set<Relation> getAllConstants(Mapping mapping) {
-        return new HashSet<>(mapping.getEDB());
+    static List<String> getAllConstants(List<Relation> factsByRule) {
+        Set<String> constants = new HashSet<>();
+        factsByRule.forEach(edb ->
+                constants.addAll(Arrays.asList(edb.getAttributes()))
+        );
+
+        return constants.stream().collect(Collectors.toList());
     }
 
     /**
