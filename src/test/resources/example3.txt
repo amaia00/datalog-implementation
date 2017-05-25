@@ -4,8 +4,8 @@ EDB
 
 link (Charpennes, Perrache)
 link (PartDieu, Charpennes)
-link (Debourg , PartDieu)
-link(PartDieu ,Debourg)
+link (Debourg, PartDieu)
+link(PartDieu, Debourg)
 
 IDB
 metro($x)
@@ -15,5 +15,5 @@ MAPPING
 link ($x,$y) -> metro($x)
 link ($x,$y) -> metro($y)
 link ($x,$y) -> reachable ($x,$y)
-NEG metro ($x), reachable ($z,$y) -> reachable ($x,$y)
+NEG metro ($x), reachable ($z,$y) -> reachable ($x,$y).
 

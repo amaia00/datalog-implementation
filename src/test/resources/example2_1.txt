@@ -12,5 +12,5 @@ MAPPING
 NEG q($x), r($x) -> p($x)
 NEG t($x), q($x) -> p($x)
 s($x), NEG t($x) -> q($x)
-t($x) -> r($x)
+t($x) -> r($x).
 

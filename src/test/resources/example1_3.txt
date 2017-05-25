@@ -1,0 +1,22 @@
+-- Example not positif
+
+EDB
+metro(Charpennes)
+metro(Perrache)
+metro(PartDieu)
+metro(Debourg)
+reachable(Charpennes, Perrache)
+reachable(PartDieu, Charpennes)
+reachable(Debourg, PartDieu)
+reachable(PartDieu ,Debourg)
+reachable(PartDieu, Perrache)
+reachable(Debourg, Charpennes)
+reachable(Debourg, Debourg)
+reachable(PartDieu, PartDieu)
+reachable(Debourg, Perrache)
+
+IDB
+unreachable($x,$y)
+
+MAPPING
+metro($x), metro($y), NEG reachable($x, $y) -> unreachable($x, $y).

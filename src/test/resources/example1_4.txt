@@ -1,0 +1,21 @@
+-- Positive example
+
+EDB
+metro(Charpennes)
+metro(Perrache)
+metro(PartDieu)
+metro(Debourg) 
+creachable(Charpennes, Charpennes) 
+creachable(Charpennes, PartDieu) 
+creachable(Charpennes, Debourg) 
+creachable(Perrache, Charpennes) 
+creachable(Perrache, PartDieu)
+creachable(Perrache, Perrache)
+creachable(Perrache, Debourg)
+
+IDB
+unreachable($x, $y)
+
+MAPPING
+
+metro($x), metro($y), creachable($x, $y) -> unreachable($x, $y).

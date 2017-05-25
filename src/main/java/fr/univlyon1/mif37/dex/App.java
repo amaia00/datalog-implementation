@@ -159,7 +159,7 @@ public class App {
                 System.out.println("EvaluationPostive positive");
                 allFacts = EvaluationPositive.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
             } else {
-                System.out.println("EvaluationPostive semipositive");
+                System.out.println("Evaluation semipositive");
                 allFacts = EvaluationStratifie.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
             }
             allFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
