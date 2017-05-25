@@ -4,6 +4,7 @@ import fr.univlyon1.mif37.dex.mapping.*;
 import fr.univlyon1.mif37.dex.parser.MappingParser;
 import fr.univlyon1.mif37.dex.parser.ParseException;
 import fr.univlyon1.mif37.dex.utils.EvaluationPositive;
+import fr.univlyon1.mif37.dex.utils.EvaluationStratifie;
 import fr.univlyon1.mif37.dex.utils.Stratified;
 import fr.univlyon1.mif37.dex.utils.Util;
 import org.slf4j.Logger;
@@ -152,14 +153,15 @@ public class App {
         /* EvaluationPostive */
 
         try {
-            System.out.println("EvaluationPostive positive");
-            Set<Relation> newFacts;
-            //if (Stratified.isPositif(mapping))
-                newFacts = EvaluationPositive.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
-            //else {
-             //   newFacts = EvaluationStratifie.evaluateSemiposifProgram(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
-            //}
-            //newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
+            List<Relation> allFacts;
+            if (Stratified.isPositif(mapping)) {
+                System.out.println("EvaluationPostive positive");
+                allFacts = EvaluationPositive.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            } else {
+                System.out.println("EvaluationPostive semipositive");
+                allFacts = EvaluationStratifie.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            }
+            allFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
         }catch (Exception e) {
             e.printStackTrace();
         }

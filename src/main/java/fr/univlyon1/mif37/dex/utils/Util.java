@@ -1,8 +1,6 @@
 package fr.univlyon1.mif37.dex.utils;
 
-import fr.univlyon1.mif37.dex.mapping.AbstractRelation;
-import fr.univlyon1.mif37.dex.mapping.Relation;
-import fr.univlyon1.mif37.dex.mapping.Tgd;
+import fr.univlyon1.mif37.dex.mapping.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -129,7 +127,17 @@ public class Util {
      * @return
      */
     public static boolean equalsRelation(Relation edb, Relation possibleFact) {
-        return edb.getAttributes().equals(possibleFact.getAttributes()) && edb.getName().equals(possibleFact.getName());
+        return Arrays.equals(new List[]{Arrays.asList(edb.getAttributes())},
+                new List[]{Arrays.asList(possibleFact.getAttributes())})
+                && edb.getName().equals(possibleFact.getName());
+    }
+
+    public static boolean sameOrderAttributes(String[] attributes1, String[] attributes2) {
+        return sameOrderAttributes(Arrays.asList(attributes1), Arrays.asList(attributes2));
+    }
+
+    public static boolean sameOrderAttributes(String[] attributes1, List<String> attributes2) {
+        return sameOrderAttributes(Arrays.asList(attributes1), attributes2);
     }
 
     public static boolean sameOrderAttributes(List<Object> attributes1, List<String> attributes2) {
@@ -151,5 +159,33 @@ public class Util {
         }
 
         return true;
+    }
+
+    /**
+     *
+     * @param attributesOfRule
+     * @param variableValue
+     * @param position
+     * @return
+     */
+    public static boolean sameAttributeAtThePosition(String[] attributesOfRule, String variableValue, int position) {
+        List<String> attributes = Arrays.asList(attributesOfRule);
+        if (position <= attributes.size()) {
+            if (attributes.get(position).equals(variableValue))
+                return true;
+        }
+
+        return false;
+    }
+
+
+    static List<Relation> removeDuplicates(List<Relation> facts) {
+        List<Relation> uniqueList = new ArrayList<>();
+        for (Relation edb: facts) {
+            if (uniqueList.stream().noneMatch(f -> equalsRelation(edb, f)))
+                uniqueList.add(edb);
+        }
+
+        return uniqueList;
     }
 }

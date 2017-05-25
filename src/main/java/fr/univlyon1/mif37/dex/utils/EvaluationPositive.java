@@ -19,7 +19,7 @@ public class EvaluationPositive {
         /* On cache le constructeur */
     }
 
-    public static Set<Relation> evaluate(Mapping mapping, Map<Integer, List<Tgd>> tgdByOrderOfEvaluation,
+    public static List<Relation> evaluate(Mapping mapping, Map<Integer, List<Tgd>> tgdByOrderOfEvaluation,
                                          Map<Integer, List<Relation>> edbByOrderOfEvaluation) {
         AtomicInteger partition = new AtomicInteger();
         partition.set(1);
@@ -96,6 +96,7 @@ public class EvaluationPositive {
                 }
 
                 /*
+                 * TODO Revoir cette se
                  * On ne trouve pas des nouveaux faits, donc on arrête le parcours en assignant la valeur de
                  * la taille du TGD à la variable particion.
                  */
@@ -106,8 +107,7 @@ public class EvaluationPositive {
             partition.incrementAndGet();
         }
 
-        newFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
-        return new HashSet<>(newFacts);
+        return Util.removeDuplicates(newFacts);
     }
 
     /**
@@ -119,7 +119,7 @@ public class EvaluationPositive {
      * @param tgd          tout le TGD du programme
      * @param relation     la relation qu'on va inferer
      */
-    private static void verifierAndAddNewsFacts(Mapping mapping, List<Relation> newFacts, Map<String, String> mapVariables,
+    static void verifierAndAddNewsFacts(Mapping mapping, List<Relation> newFacts, Map<String, String> mapVariables,
                                                 AtomicInteger counterFacts, List<Relation> factsByRule, Tgd tgd, Relation relation) {
         if (relation != null) {
             /*
@@ -206,7 +206,7 @@ public class EvaluationPositive {
      * @param mapVariables le map des variables déjà assignés
      * @param attributes les attributes du nouevau fait qu'on va inferer.
      */
-    private static void addConstantsAndVariables(NavigableMap<String, List<String>> mapConstants, Literal literal,
+    static void addConstantsAndVariables(NavigableMap<String, List<String>> mapConstants, Literal literal,
                                                  Map<String, String> mapVariables, List<String> attributes) {
         /*
          * On ajoute dans la collection de mapConstants la règle avec les constantes qui ont été affectés
@@ -277,6 +277,7 @@ public class EvaluationPositive {
 //        }
         if (mapVariables.containsKey(variable.getName())) {
             attributes.add(position.get(), mapVariables.get(variable.getName()));
+            relation.set(new Relation(variable.getName(), attributes));
         } else {
             Optional<Relation> relationOptional = factsByRule.stream()
                     .filter(edb -> literal.getAtom().getName()
