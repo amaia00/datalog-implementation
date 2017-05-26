@@ -16,7 +16,7 @@ reachable(PartDieu, PartDieu)
 reachable(Debourg, Perrache)
 
 IDB
-unreachable($x,$y)
+unreachable($x, $y)
 
 MAPPING
 metro($x), metro($y), NEG reachable($x, $y) -> unreachable($x, $y).

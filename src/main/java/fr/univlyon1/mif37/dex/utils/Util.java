@@ -132,14 +132,32 @@ public class Util {
                 && edb.getName().equals(possibleFact.getName());
     }
 
+    /**
+     *
+     * @param attributes1
+     * @param attributes2
+     * @return
+     */
     public static boolean sameOrderAttributes(String[] attributes1, String[] attributes2) {
         return sameOrderAttributes(Arrays.asList(attributes1), Arrays.asList(attributes2));
     }
 
+    /**
+     *
+     * @param attributes1
+     * @param attributes2
+     * @return
+     */
     public static boolean sameOrderAttributes(String[] attributes1, List<String> attributes2) {
         return sameOrderAttributes(Arrays.asList(attributes1), attributes2);
     }
 
+    /**
+     *
+     * @param attributes1
+     * @param attributes2
+     * @return
+     */
     public static boolean sameOrderAttributes(List<Object> attributes1, List<String> attributes2) {
         Iterator<Object> iteratorRelation1 = attributes1.iterator();
         Iterator<String> iteratorRelation2 = attributes2.iterator();
@@ -178,7 +196,11 @@ public class Util {
         return false;
     }
 
-
+    /**
+     *
+     * @param facts
+     * @return
+     */
     static List<Relation> removeDuplicates(List<Relation> facts) {
         List<Relation> uniqueList = new ArrayList<>();
         for (Relation edb: facts) {

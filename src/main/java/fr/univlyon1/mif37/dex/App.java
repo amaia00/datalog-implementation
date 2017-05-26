@@ -107,53 +107,14 @@ public class App {
 
         /* Por arrêter Ctrl +  D*/
 
-        Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = new HashMap<>();
-        Map<Integer, List<Relation>> edbByOrderOfEvaluation = new HashMap<>();
+        Map.Entry<Map, Map> edbAndTgdStratums;
         try {
-            Map<Integer, List<Object>> slices = Stratified.getSlices(mapping);
-            for (Map.Entry<Integer, List<Object>> slice : slices.entrySet()) {
-                System.out.println(slice.getKey().toString() + ":");
+            edbAndTgdStratums = Stratified.getRulesByStratum(mapping);
 
-                List<Object> rules = slice.getValue();
-                rules.forEach(rule -> {
+            Map<Integer, List<Relation>> edbByOrderOfEvaluation = edbAndTgdStratums.getKey();
+            Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
-                    try {
-                        Relation edb = (Relation)rule;
-                        if (edbByOrderOfEvaluation.containsKey(slice.getKey())) {
-                            edbByOrderOfEvaluation.get(slice.getKey()).add(edb);
-                        }else {
-                            List<Relation> list = new ArrayList<>();
-                            list.add(edb);
-                            edbByOrderOfEvaluation.put(slice.getKey(), list);
-                        }
-
-                        System.out.println(Util.getEDBString(edb));
-                    }catch (Exception ex){
-                        //nothing
-                    }
-
-                    try {
-                        Tgd tgd = (Tgd) rule;
-                        if (tgdByOrderOfEvaluation.containsKey(slice.getKey()))
-                            tgdByOrderOfEvaluation.get(slice.getKey()).add(tgd);
-                        else {
-                            List<Tgd> list = new ArrayList<>();
-                            list.add(tgd);
-                            tgdByOrderOfEvaluation.put(slice.getKey(), list);
-                        }
-                        System.out.println(Util.getTgdString(tgd));
-                    }catch (Exception ex) {
-                        //nothing
-                    }
-                });
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        /* EvaluationPostive */
-
-        try {
+            /* EvaluationPostive */
             List<Relation> allFacts;
             if (Stratified.isPositif(mapping)) {
                 System.out.println("EvaluationPostive positive");
@@ -163,7 +124,8 @@ public class App {
                 allFacts = EvaluationStratifie.evaluate(mapping, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
             }
             allFacts.forEach(fact -> System.out.println(Util.getEDBString(fact)));
-        }catch (Exception e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -53,6 +53,9 @@ public class EvaluationStratifie {
             List<Relation> edbsFounded = new ArrayList<>();
             factCounterAfter.set(0);
 
+            while (!tgdByOrderOfEvaluation.containsKey(partition.get()))
+                partition.incrementAndGet();
+
             tgdByOrderOfEvaluation.get(partition.get()).forEach(tgd -> {
 
                 if (DEBUG) {
@@ -185,8 +188,6 @@ public class EvaluationStratifie {
                     * Pour chaque variable on cherche s'il existe déjà une variable affecté dans la collection
                     * `mapVariables`, si c'est le cas on l'ajoute dans les attributs, sinon, on cherche une règle
                     * dans l'EDB qui a toutes les attributes déjà affectés.
-                    *
-                    * TODO Verifier le cas d'une variable au millieu de la règle.
                     */
                     AtomicInteger position = new AtomicInteger();
                     position.set(0);

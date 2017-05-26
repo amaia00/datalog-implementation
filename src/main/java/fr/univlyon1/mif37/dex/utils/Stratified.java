@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * TODO: Add comments
+ *
  * @author Amaia Nazábal
  * @version 1.0
  * @since 1.0 4/21/17.
@@ -60,7 +62,7 @@ public class Stratified {
 
         return positif.get();
     }
-
+// TODO: isSemiPositif
 //    static Relation isSemiPositif(Collection<Relation> edbs, Tgd tgd) {
 //
 //        boolean is_true = false;
@@ -186,7 +188,6 @@ public class Stratified {
     }
 
     /**
-     *
      * La stratification vérifié si le programme est stratifiable et retourne la liste
      * des prédicats avec son stratums
      *
@@ -237,15 +238,15 @@ public class Stratified {
         Map<Integer, List<Object>> slices = new HashMap<>();
         Map<String, Integer> stratums = stratification(mapping.getEDB(), mapping.getIDB(), mapping.getTgds());
         stratums = stratums.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.comparingByValue())
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (e1, e2) -> e1,
-                            LinkedHashMap::new
-                    ));
-        for (Map.Entry<String, Integer> stratum: stratums.entrySet()) {
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+        for (Map.Entry<String, Integer> stratum : stratums.entrySet()) {
             if (slices.get(stratum.getValue()) == null) {
                 slices.put(stratum.getValue(), Util.getSymbols(mapping.getEDB(), mapping.getTgds(), stratum.getKey()));
             } else {
@@ -256,5 +257,57 @@ public class Stratified {
         }
 
         return slices;
+    }
+
+    /**
+     * TODO add comment supprimer logs print
+     *
+     * @param mapping
+     * @return
+     */
+    public static AbstractMap.SimpleEntry<Map, Map> getRulesByStratum(Mapping mapping) throws Exception {
+        Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = new HashMap<>();
+        Map<Integer, List<Relation>> edbByOrderOfEvaluation = new HashMap<>();
+
+        Map<Integer, List<Object>> slices = Stratified.getSlices(mapping);
+
+        for (Map.Entry<Integer, List<Object>> slice : slices.entrySet()) {
+            System.out.println(slice.getKey().toString() + ":");
+
+            List<Object> rules = slice.getValue();
+            rules.forEach(rule -> {
+
+                try {
+                    Relation edb = (Relation) rule;
+                    if (edbByOrderOfEvaluation.containsKey(slice.getKey())) {
+                        edbByOrderOfEvaluation.get(slice.getKey()).add(edb);
+                    } else {
+                        List<Relation> list = new ArrayList<>();
+                        list.add(edb);
+                        edbByOrderOfEvaluation.put(slice.getKey(), list);
+                    }
+
+                    System.out.println(Util.getEDBString(edb));
+                } catch (Exception ex) {
+                    //nothing
+                }
+
+                try {
+                    Tgd tgd = (Tgd) rule;
+                    if (tgdByOrderOfEvaluation.containsKey(slice.getKey()))
+                        tgdByOrderOfEvaluation.get(slice.getKey()).add(tgd);
+                    else {
+                        List<Tgd> list = new ArrayList<>();
+                        list.add(tgd);
+                        tgdByOrderOfEvaluation.put(slice.getKey(), list);
+                    }
+                    System.out.println(Util.getTgdString(tgd));
+                } catch (Exception ex) {
+                    //nothing
+                }
+            });
+        }
+
+        return new AbstractMap.SimpleEntry<>(edbByOrderOfEvaluation, tgdByOrderOfEvaluation);
     }
 }

@@ -96,7 +96,6 @@ public class EvaluationPositive {
                 }
 
                 /*
-                 * TODO Revoir cette se
                  * On ne trouve pas des nouveaux faits, donc on arrête le parcours en assignant la valeur de
                  * la taille du TGD à la variable particion.
                  */
@@ -173,7 +172,6 @@ public class EvaluationPositive {
                 * `mapVariables`, si c'est le cas on l'ajoute dans les attributs, sinon, on cherche une règle
                 * dans l'EDB qui a toutes les attributes déjà affectés.
                 *
-                * TODO Verifier le cas d'une variable au millieu de la règle.
                 */
                 AtomicInteger position = new AtomicInteger();
                 position.set(0);

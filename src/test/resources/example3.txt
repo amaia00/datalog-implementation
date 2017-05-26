@@ -2,9 +2,9 @@
 
 EDB
 
-link (Charpennes, Perrache)
-link (PartDieu, Charpennes)
-link (Debourg, PartDieu)
+link(Charpennes, Perrache)
+link(PartDieu, Charpennes)
+link(Debourg, PartDieu)
 link(PartDieu, Debourg)
 
 IDB
