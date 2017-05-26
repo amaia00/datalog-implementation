@@ -39,9 +39,10 @@ public class EvaluationSemipositiveTest {
             /* Evaluation */
             List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("creachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 9);
+
 
 
 
@@ -104,9 +105,9 @@ public class EvaluationSemipositiveTest {
             List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
 
 
 
@@ -205,10 +206,10 @@ public class EvaluationSemipositiveTest {
             /* Evaluation */
             List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 4);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 9);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
 
         } catch (Exception e) {
             e.printStackTrace();

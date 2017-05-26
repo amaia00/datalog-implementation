@@ -13,7 +13,7 @@ MAPPING
 link($x,$y) -> metro($x).
 link($x,$y) -> metro($y).
 link($x,$y) -> reachable($x,$y).
-link($x,$z), reachable($z,$y) -> reachable($x,$y).
-metro($y), metro($y), NEG reachable($x,$y) -> unreachable($x,$y).
+link($x,$z), reachable($z,$y) -> reachable($x,$y)
+metro($x), metro($y), NEG reachable($x,$y) -> unreachable($x,$y).
 
 

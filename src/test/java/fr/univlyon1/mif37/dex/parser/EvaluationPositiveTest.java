@@ -50,7 +50,6 @@ public class EvaluationPositiveTest {
 
     }
 
-    // TODO Verifier evaluation positive
     @Test
     public void example1_4() throws ParseException {
         Reader input = new InputStreamReader(EvaluationPositiveTest.class.getResourceAsStream("/example1_4.txt"));

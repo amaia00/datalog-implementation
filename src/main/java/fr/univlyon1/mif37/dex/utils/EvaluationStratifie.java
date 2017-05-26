@@ -15,6 +15,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class EvaluationStratifie {
     private static final boolean DEBUG = false;
 
+    private static final List<Map.Entry<String, Relation>> historical = new ArrayList<>();
+    private static final Map<String, Integer> intents = new HashMap<>();
+    private static final List<Relation> factsByRule = new ArrayList<>();
+    private static final NavigableMap<String, List<String>> mapConstants = new TreeMap<>();
+    private static final Map<String, String> mapVariables = new HashMap<>();
+
     private EvaluationStratifie() {
         /* On cache le constructeur */
     }
@@ -79,19 +85,17 @@ public class EvaluationStratifie {
                                         );
 
 
-                NavigableMap<String, List<String>> mapConstants = new TreeMap<>();
-                Map<String, String> mapVariables = new HashMap<>();
+                mapConstants.clear();
+                mapVariables.clear();
 
-                List<Relation> factsByRule = new ArrayList<>();
+                factsByRule.clear();
                 factsByRule.addAll(newFacts);
 
                 boolean firstTime = true;
+                int maxIterationsPossibles = factsByRule.size() * 4; //TODO: Voir valeur appropié
 
-                int maxIterationsPossibles = factsByRule.size() * 3;
-                mapVariables.clear();
-
-                List<Map.Entry<String, Relation>> historical = new ArrayList<>();
-                Map<String, Integer> intents = new HashMap<>();
+                historical.clear();
+                intents.clear();
 
                 while ((firstTime || newFactsSizeBefore.get() != newFacts.size()) && !factsByRule.isEmpty()) {
                     firstTime = false;
@@ -99,7 +103,6 @@ public class EvaluationStratifie {
 
                     /* Cette variable represente le fait utilisé pour deduire la règle */
                     AtomicReference<Relation> relation = new AtomicReference<>();
-                    //mapVariables.clear();
 
                     /*
                      * Pour chaque sous-règle dans le corps de la règle on cherche les constantes dans edbsFounded
@@ -109,8 +112,7 @@ public class EvaluationStratifie {
                     AtomicBoolean exhaustiveSearch = new AtomicBoolean();
                     exhaustiveSearch.set(true);
 
-                    exhaustiveSearchByPredicatSemipositif(mapConstants, mapVariables, tgd, relation, factsByRule,
-                            maxIterationsPossibles, historical, intents);
+                    exhaustiveSearchByPredicatSemipositif(tgd, relation, maxIterationsPossibles);
 
                     if (relation.get() != null) {
                         /*
@@ -126,7 +128,7 @@ public class EvaluationStratifie {
                         /*
                          * On ajoute le nouevau fact
                          */
-                        addNewsFact(mapping, attributes, newFacts, counterFacts, factsByRule, tgd);
+                        addNewsFact(mapping, attributes, newFacts, counterFacts, tgd);
 
                         /* On enlève le fait déjà utilisé pour ne pas avoir de doublants et pour finir le boucle.*/
                         //factsByRule.removeIf(relation1 -> Util.equalsRelation(relation1, relation.get()));
@@ -149,19 +151,11 @@ public class EvaluationStratifie {
 
 
     /**
-     * @param mapConstants une liste des faits avec ses attributs qui ont été pris en compte pour l'évalutaion de
-     *                     cette règle.
-     * @param mapVariables une liste des variables avec les valeurs assignés
      * @param tgd          la règle qu'on est en train d'évaluer
      * @param relation     un nouveau fait possible pour ce règle.
-     * @param factsByRule  tous les faits (anciens et nouveaux) qui ont été pris en compte pour cette partition.
      */
-    private static void exhaustiveSearchByPredicatSemipositif(NavigableMap<String, List<String>> mapConstants,
-                                                              Map<String, String> mapVariables,
-                                                              Tgd tgd, AtomicReference<Relation> relation,
-                                                              List<Relation> factsByRule, int maxIterationsPossibles,
-                                                              List<Map.Entry<String, Relation>> historical,
-                                                              Map<String, Integer> intents) {
+    private static void exhaustiveSearchByPredicatSemipositif(Tgd tgd, AtomicReference<Relation> relation,
+                                                              int maxIterationsPossibles) {
          /*
          * Pour chaque sous-règle dans le corps de la règle on cherche les constantes dans edbsFounded
          * On garde dans le map `mapConstants` les règles qui sont dans le corps avec les attributs
@@ -177,81 +171,109 @@ public class EvaluationStratifie {
 
         while (exhaustiveSearch.get() && countIterations.get() <= maxIterationsPossibles) {
             exhaustiveSearch.set(false);
+
             AtomicInteger positionLiteral = new AtomicInteger();
             positionLiteral.set(0);
+
+            AtomicBoolean notMatchRuleFounded = new AtomicBoolean();
+
             tgd.getLeftList().forEach(literal -> {
-                List<String> attributes = new ArrayList<>();
 
-                countIterations.incrementAndGet();
+                if (!notMatchRuleFounded.get()) {
+                    List<String> attributes = new ArrayList<>();
 
-                if (literal.getFlag()) {
+                    countIterations.incrementAndGet();
+
+                    if (literal.getFlag()) {
                     /*
                     * Pour chaque variable on cherche s'il existe déjà une variable affecté dans la collection
                     * `mapVariables`, si c'est le cas on l'ajoute dans les attributs, sinon, on cherche une règle
                     * dans l'EDB qui a toutes les attributes déjà affectés.
                     */
-                    AtomicInteger position = new AtomicInteger();
-                    position.set(0);
+                        loopOverRules(literal, attributes, exhaustiveSearch, tgd, relation, positionLiteral);
 
-                    AtomicBoolean repeat = new AtomicBoolean();
-                    AtomicBoolean byMapVariables = new AtomicBoolean();
 
-                    literal.getAtom().getVars().forEach(variable -> {
-                        relation.set(getNextPositivePossibleFact(mapVariables, variable, attributes,
-                                position, factsByRule, mapConstants, literal, exhaustiveSearch, historical, repeat.get(),
-                                positionLiteral.get(), tgd, intents, byMapVariables));
+                    } else {
+                        AtomicInteger position = new AtomicInteger();
+                        position.set(0);
 
-                        // TODO verifier si c'est correct dans ce cas
-                        if (!byMapVariables.get())
-                            repeat.set(true);
+                        relation.set(getNextPossibleFactNegativeRule(literal.getAtom().getVars(), attributes,
+                                position, literal, exhaustiveSearch));
 
                         position.incrementAndGet();
-                    });
+                    }
 
-                } else {
-                    AtomicInteger position = new AtomicInteger();
-                    position.set(0);
-//                    literal.getAtom().getVars().forEach(variable -> {
-                    relation.set(getNextPossibleFactNegativeRule(mapVariables, literal.getAtom().getVars(), attributes,
-                            position, factsByRule, literal, exhaustiveSearch));
-
-                    position.incrementAndGet();
-//                    });
-                }
-
-                positionLiteral.incrementAndGet();
+                    positionLiteral.incrementAndGet();
 
                  /*
                   * Si relation est ça veut dire qu'il n'y a plus des règles à appliquer
                   */
-                if (relation.get() != null) {
+                    if (relation.get() != null) {
                     /*
                      * On ajoute dans la collection de mapConstants la règle avec les constantes qui ont été affectés
                      * lors de l'inference
                      * c-a-d au lieu de p(x), on aura p(A)
                      */
-                    mapConstants.put(literal.getAtom().getName(), attributes);
+                        mapConstants.put(literal.getAtom().getName(), attributes);
 
                     /*
                      * On ajoute dans la collection de mapVariables quelle variables ont été affectés avec quelle valeur
                      * e.g. $x -> A, $y -> B
                      */
-                    AtomicInteger index = new AtomicInteger();
-                    index.set(-1);
-                    if (DEBUG) {
-                        System.out.println("Literal: " + literal.getAtom().getName());
-                    }
-                    literal.getAtom().getVars().forEach(var -> mapVariables.put(var.getName(), attributes
-                            .get(index.incrementAndGet())));
-                } else {
-                    if (positionLiteral.get() >= tgd.getLeftList().size()) {
-                        mapVariables.clear();
-                        mapConstants.clear();
+                        AtomicInteger index = new AtomicInteger();
+                        index.set(-1);
+                        if (DEBUG) {
+                            System.out.println("Literal: " + literal.getAtom().getName());
+                        }
+                        literal.getAtom().getVars().forEach(var -> mapVariables.put(var.getName(), attributes
+                                .get(index.incrementAndGet())));
+                    } else {
+                        if (literal.getFlag())
+                            notMatchRuleFounded.set(true);
+
+                        if (positionLiteral.get() >= tgd.getLeftList().size()) {
+                            mapVariables.clear();
+                            mapConstants.clear();
+                        }
                     }
                 }
-
             });
         }
+    }
+
+
+    /**
+     *
+     * @param literal
+     * @param attributes
+     * @param exhaustiveSearch
+     * @param tgd
+     * @param relation
+     * @param positionLiteral
+     */
+    private static void loopOverRules(Literal literal, List<String> attributes, AtomicBoolean exhaustiveSearch,
+                                      Tgd tgd, AtomicReference<Relation> relation,AtomicInteger positionLiteral) {
+        AtomicInteger position = new AtomicInteger();
+        position.set(0);
+
+        AtomicBoolean notFounded = new AtomicBoolean();
+        AtomicBoolean repeat = new AtomicBoolean();
+        AtomicBoolean byMapVariables = new AtomicBoolean();
+
+        literal.getAtom().getVars().forEach(variable -> {
+            if (!notFounded.get()) {
+                relation.set(getNextPositivePossibleFact(variable, attributes, literal, exhaustiveSearch,
+                        repeat.get(), positionLiteral.get(), tgd, byMapVariables));
+
+                repeat.set(true);
+                if (relation.get() == null) {
+                    notFounded.set(true);
+                }
+            }
+
+            position.incrementAndGet();
+        });
+
     }
 
     /**
@@ -261,11 +283,10 @@ public class EvaluationStratifie {
      * @param attributes   les attributs du nouveau fait
      * @param newFacts     la liste de facts qui ont été déjà ajoutés
      * @param counterFacts le compteur des nouveaux faits
-     * @param factsByRule  tous les faits (anciens et nouveaux) qui ont été pris en compte pour cette partition.
      * @param tgd          la règle qu'on est en train d'évaluer
      */
     private static void addNewsFact(Mapping mapping, List<String> attributes, List<Relation> newFacts,
-                                    AtomicInteger counterFacts, List<Relation> factsByRule, Tgd tgd) {
+                                    AtomicInteger counterFacts, Tgd tgd) {
         /*
          * On vérifie que le nouveau fait n'existe pas encore dans la BD de faits.
          */
@@ -288,20 +309,17 @@ public class EvaluationStratifie {
      * Cette méthode cherche les valeurs possibles pour chaque attribute de sous-règle en vérifiant les faits
      * définis et les nouveaux faits trouvés à partir de l'évaluation anterieur.
      *
-     * @param mapVariables     une liste des variables avec les valeurs assignés
      * @param variables        les variables qu'on est en train d'évaluer et chercher sa valeur
      * @param attributes       les attributs de la règle qu'on est en train d'évaluer
      * @param position         la position de l'attribut
-     * @param factsByRule      tous les faits (anciens et nouveaux) qui ont été pris en compte pour cette partition.
      * @param literal          le literal qu'on est en train de traiter
      * @param exhaustiveSearch un drapeau pour vérifier si on devrai continuer en essaiant des autres fait por ce règle.
      *
      * @return un nouveau fait possible pour ce règle.
      */
-    private static Relation getNextPossibleFactNegativeRule(Map<String, String> mapVariables,
-                                                            Collection<Variable> variables, List<String> attributes,
-                                                            AtomicInteger position, List<Relation> factsByRule,
-                                                            Literal literal, AtomicBoolean exhaustiveSearch) {
+    private static Relation getNextPossibleFactNegativeRule(Collection<Variable> variables, List<String> attributes,
+                                                            AtomicInteger position, Literal literal,
+                                                            AtomicBoolean exhaustiveSearch) {
 
         AtomicReference<Relation> relation = new AtomicReference<>();
 
@@ -316,11 +334,8 @@ public class EvaluationStratifie {
                     Arrays.asList(fact.getAttributes()).containsAll(attributes) &&
                     Util.sameOrderAttributes(Arrays.asList(fact.getAttributes()), allValues))) {
 
-//                allValues.forEach((name, value) -> attributes.add(position.getAndIncrement(), value));
-                //attributes.add(position.get(), mapVariables.get(variable.getName()));
                 attributes.addAll(allValues);
                 relation.set(new Relation(literal.getAtom().getName(), attributes));
-                //exhaustiveSearch.set(true);
 
             } else {
                 relation.set(null);
@@ -377,32 +392,21 @@ public class EvaluationStratifie {
      * Cette méthode cherche les valeurs possibles pour chaque attribute de sous-règle en vérifiant les faits
      * définis et les nouveaux faits trouvés à partir de l'évaluation anterieur.
      *
-     * @param mapVariables     une liste des variables avec les valeurs assignés
      * @param variable         la variable qu'on est en train d'évaluer et chercher sa valeur
      * @param attributes       les attributs de la règle qu'on est en train d'évaluer
-     * @param position         la position de l'attribut
-     * @param factsByRule      tous les faits (anciens et nouveaux) qui ont été pris en compte pour cette partition.
-     * @param mapConstants     une liste des faits avec ses attributs qui ont été pris en compte pour l'évalutaion de
-     *                         cette règle.
      * @param literal          le literal qu'on est en train de traiter
      * @param exhaustiveSearch un drapeau pour vérifier si on devrai continuer en essaiant des autres fait por ce règle.
-     * @param historical       les anciennes variables de l'iteration anterieur.
      *
      * @return un nouveau fait possible pour ce règle.
      */
-    static Relation getNextPositivePossibleFact(Map<String, String> mapVariables, Variable variable,
-                                                List<String> attributes,
-                                                AtomicInteger position, List<Relation> factsByRule,
-                                                NavigableMap<String, List<String>> mapConstants,
-                                                Literal literal, AtomicBoolean exhaustiveSearch,
-                                                List<Map.Entry<String, Relation>> historical,
-                                                boolean repeat, int iteration, Tgd tgd, Map<String, Integer> intents,
-                                                AtomicBoolean byMapVariables) {
+    static Relation getNextPositivePossibleFact(Variable variable, List<String> attributes, Literal literal,
+                                                AtomicBoolean exhaustiveSearch, boolean repeat, int iteration,
+                                                Tgd tgd, AtomicBoolean byMapVariables) {
 
         AtomicReference<Relation> relation = new AtomicReference<>();
 
 
-        Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, attributes, historical, repeat,
+        Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, historical, repeat,
                 iteration, tgd, intents, mapVariables, variable, byMapVariables);
 
         if (relationOptional.isPresent()) {

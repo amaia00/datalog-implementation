@@ -5,6 +5,7 @@ link(Charpennes, Perrache)
 link(PartDieu, Charpennes)
 link(Debourg, PartDieu)
 link(PartDieu, Debourg)
+
 reachable(Charpennes, Perrache)
 reachable(PartDieu ,Charpennes)
 reachable(Debourg, PartDieu)
@@ -22,5 +23,5 @@ unreachable($x, $y)
 MAPPING
 link($x,$y) -> metro($x)
 link($x,$y) -> metro($y)
-metro($x), metro($y), NEG reachable($x,$y) -> unreachable($x,$y).
+metro($x), metro($y), NEG reachable($x, $y) -> unreachable($x, $y).
 

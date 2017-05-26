@@ -23,7 +23,6 @@ public class Fact {
     /**
      * @param factsByRule
      * @param literal
-     * @param attributes
      * @param historical
      * @param repeat
      * @param position
@@ -31,7 +30,7 @@ public class Fact {
      *
      * @return
      */
-    public static Optional<Relation> getNextFact(List<Relation> factsByRule, Literal literal, List<String> attributes,
+    public static Optional<Relation> getNextFact(List<Relation> factsByRule, Literal literal,
                                                  List<Map.Entry<String, Relation>> historical, boolean repeat,
                                                  int position, Tgd tgd, Map<String, Integer> intents,
                                                  Map<String, String> mapVariables, Variable variable,
