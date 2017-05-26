@@ -25,9 +25,9 @@ public class EvaluationSemipositiveTest {
         Mapping m = parser.mapping();
         assertNotNull(m);
         assert(!Stratified.isPositif(m));
-        assertEquals(12,m.getEDB().size());
-        assertEquals(2,m.getIDB().size());
-        assertEquals(3,m.getTgds().size());
+        assertEquals(4,m.getEDB().size());
+        assertEquals(3,m.getIDB().size());
+        assertEquals(5,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
         try {
@@ -205,7 +205,7 @@ public class EvaluationSemipositiveTest {
             /* Evaluation */
             List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 4);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 4);

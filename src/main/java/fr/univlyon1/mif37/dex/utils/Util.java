@@ -171,7 +171,11 @@ public class Util {
             else
                 return true;
 
-            if (!attribute1.equals(attribute2)) {
+            if (attribute1 == null) {
+                return false;
+            }
+
+            if (attribute2 != null && !attribute1.equals(attribute2)) {
                 return false;
             }
         }

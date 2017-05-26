@@ -37,7 +37,7 @@ public class EvaluationPositiveTest {
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
 
 
         } catch (Exception e) {

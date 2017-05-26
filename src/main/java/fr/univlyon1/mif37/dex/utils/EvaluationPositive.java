@@ -72,6 +72,9 @@ public class EvaluationPositive {
                 List<Relation> factsByRule = new ArrayList<>();
                 factsByRule.addAll(newFacts);
 
+                List<Map.Entry<String, Relation>> historical = new ArrayList<>();
+                Map<String, Integer> intents = new HashMap<>();
+
                 boolean firstTime = true;
 
                 while ((firstTime || newFactsSizeBefore.get() != newFacts.size()) && !factsByRule.isEmpty()) {
@@ -89,7 +92,8 @@ public class EvaluationPositive {
                      */
                     AtomicBoolean exhaustiveSearch = new AtomicBoolean();
                     exhaustiveSearch.set(true);
-                    exhaustiveSearchByPredicat(mapConstants, mapVariables, tgd, relation, factsByRule);
+                    exhaustiveSearchByPredicat(mapConstants, mapVariables, tgd, relation, factsByRule, historical,
+                            intents);
 
                     verifierAndAddNewsFacts(mapping, newFacts, mapVariables, counterFacts, factsByRule, tgd,
                             relation.get());
@@ -152,7 +156,9 @@ public class EvaluationPositive {
     private static void exhaustiveSearchByPredicat(NavigableMap<String, List<String>> mapConstants,
                                                    Map<String, String> mapVariables,
                                                    Tgd tgd, AtomicReference<Relation> relation,
-                                                   List<Relation> factsByRule) {
+                                                   List<Relation> factsByRule,
+                                                   List<Map.Entry<String, Relation>> historical,
+                                                   Map<String, Integer> intents) {
          /*
          * Pour chaque sous-règle dans le corps de la règle on cherche les constantes dans edbsFounded
          * On garde dans le map `mapConstants` les règles qui sont dans le corps avec les attributs
@@ -161,11 +167,24 @@ public class EvaluationPositive {
         AtomicBoolean exhaustiveSearch = new AtomicBoolean();
         exhaustiveSearch.set(true);
 
+        AtomicInteger maxIteration = new AtomicInteger();
+        maxIteration.set(30);
+
+        AtomicInteger iterationCounter = new AtomicInteger();
+        iterationCounter.set(0);
+
         while (exhaustiveSearch.get()) {
             exhaustiveSearch.set(false);
 
-            tgd.getLeftList().forEach(literal -> {
-                List<String> attributes = new ArrayList<>();
+            AtomicInteger positionLiteral = new AtomicInteger();
+            positionLiteral.set(0);
+
+            AtomicBoolean notRuleMatch = new AtomicBoolean();
+
+            tgd.getLeft().forEach(literal -> {
+                iterationCounter.incrementAndGet();
+                if (!notRuleMatch.get()) {
+                    List<String> attributes = new ArrayList<>();
 
                /*
                 * Pour chaque variable on cherche s'il existe déjà une variable affecté dans la collection
@@ -173,25 +192,45 @@ public class EvaluationPositive {
                 * dans l'EDB qui a toutes les attributes déjà affectés.
                 *
                 */
-                AtomicInteger position = new AtomicInteger();
-                position.set(0);
-                literal.getAtom().getVars().forEach(variable -> {
+                    AtomicInteger position = new AtomicInteger();
+                    position.set(0);
 
-                    if (DEBUG)
-                        System.out.println("Variable: " + variable.getName());
-                    relation.set(getNextPossibleFact(mapVariables, variable, attributes,
-                            position, factsByRule, mapConstants, literal, exhaustiveSearch));
+                    AtomicBoolean notFounded = new AtomicBoolean();
 
-                    position.incrementAndGet();
-                });
+                    AtomicBoolean repeat = new AtomicBoolean();
+                    AtomicBoolean byMapVariables = new AtomicBoolean();
+                    literal.getAtom().getVars().forEach(variable -> {
+                        if (!notFounded.get()) {
+                            relation.set(EvaluationStratifie.getNextPositivePossibleFact(mapVariables, variable, attributes,
+                                    position, factsByRule, mapConstants, literal, exhaustiveSearch, historical, repeat.get(),
+                                    positionLiteral.get(), tgd, intents, byMapVariables));
+
+                            repeat.set(true);
+
+                            if (relation.get() == null) {
+                                notFounded.set(true);
+                            }
+
+                        }
+
+                        position.incrementAndGet();
+                    });
+
+                    positionLiteral.incrementAndGet();
 
                 /*
                  * Si relation est ça veut dire qu'il n'y a plus des règles à appliquer
                  */
-                if (relation.get() != null) {
-                    addConstantsAndVariables(mapConstants, literal, mapVariables, attributes);
-                }
+                    if (relation.get() != null) {
+                        addConstantsAndVariables(mapConstants, literal, mapVariables, attributes);
+                    } else {
+                        notRuleMatch.set(true);
 
+                        if (!exhaustiveSearch.get())
+                            if (iterationCounter.get() < maxIteration.get())
+                                exhaustiveSearch.set(true);
+                    }
+                }
             });
         }
     }
@@ -240,11 +279,14 @@ public class EvaluationPositive {
          */
         if (mapping.getEDB().stream().noneMatch(edb -> Util.equalsRelation(edb, new Relation(tgd
                 .getRight().getName(), attributes)))) {
-            newFacts.add(counterFacts.get(), new Relation(tgd.getRight()
-                    .getName(), attributes));
-            factsByRule.add(new Relation(tgd.getRight()
-                    .getName(), attributes));
-            counterFacts.incrementAndGet();
+
+            if (attributes.stream().allMatch(Objects::nonNull)) {
+                newFacts.add(counterFacts.get(), new Relation(tgd.getRight()
+                        .getName(), attributes));
+                factsByRule.add(new Relation(tgd.getRight()
+                        .getName(), attributes));
+                counterFacts.incrementAndGet();
+            }
         }
 
     }

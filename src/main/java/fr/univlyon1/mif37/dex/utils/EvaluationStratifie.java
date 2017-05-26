@@ -23,6 +23,7 @@ public class EvaluationStratifie {
      * @param mapping                le mappind gu programme
      * @param tgdByOrderOfEvaluation les TGD ordonnés par stratum
      * @param edbByOrderOfEvaluation les EDB ordonnées par stratum
+     *
      * @return les nouveaux faits inferes.
      */
     public static List<Relation> evaluate(Mapping mapping, Map<Integer, List<Tgd>> tgdByOrderOfEvaluation,
@@ -69,13 +70,13 @@ public class EvaluationStratifie {
                  * On recupère dans edbsFounded = {t(A), p(b)}
                  */
                 mapping.getEDB().forEach(fact ->
-                        tgd.getLeft().forEach(rule -> {
-                            if (fact.getName().equals(rule.getAtom().getName())) {
-                                edbsFounded.add(factCounterAfter.get(), fact);
-                                factCounterAfter.incrementAndGet();
-                            }
-                        })
-                );
+                                tgd.getLeft().forEach(rule -> {
+                                    if (fact.getName().equals(rule.getAtom().getName())) {
+                                        edbsFounded.add(factCounterAfter.get(), fact);
+                                        factCounterAfter.incrementAndGet();
+                                    }
+                                })
+                                        );
 
 
                 NavigableMap<String, List<String>> mapConstants = new TreeMap<>();
@@ -193,11 +194,17 @@ public class EvaluationStratifie {
                     position.set(0);
 
                     AtomicBoolean repeat = new AtomicBoolean();
+                    AtomicBoolean byMapVariables = new AtomicBoolean();
+
                     literal.getAtom().getVars().forEach(variable -> {
                         relation.set(getNextPositivePossibleFact(mapVariables, variable, attributes,
                                 position, factsByRule, mapConstants, literal, exhaustiveSearch, historical, repeat.get(),
-                                positionLiteral.get(), tgd, intents));
-                        repeat.set(true);
+                                positionLiteral.get(), tgd, intents, byMapVariables));
+
+                        // TODO verifier si c'est correct dans ce cas
+                        if (!byMapVariables.get())
+                            repeat.set(true);
+
                         position.incrementAndGet();
                     });
 
@@ -288,6 +295,7 @@ public class EvaluationStratifie {
      * @param factsByRule      tous les faits (anciens et nouveaux) qui ont été pris en compte pour cette partition.
      * @param literal          le literal qu'on est en train de traiter
      * @param exhaustiveSearch un drapeau pour vérifier si on devrai continuer en essaiant des autres fait por ce règle.
+     *
      * @return un nouveau fait possible pour ce règle.
      */
     private static Relation getNextPossibleFactNegativeRule(Map<String, String> mapVariables,
@@ -378,55 +386,46 @@ public class EvaluationStratifie {
      *                         cette règle.
      * @param literal          le literal qu'on est en train de traiter
      * @param exhaustiveSearch un drapeau pour vérifier si on devrai continuer en essaiant des autres fait por ce règle.
-     * @param historical     les anciennes variables de l'iteration anterieur.
+     * @param historical       les anciennes variables de l'iteration anterieur.
+     *
      * @return un nouveau fait possible pour ce règle.
      */
-    private static Relation getNextPositivePossibleFact(Map<String, String> mapVariables, Variable variable,
-                                                        List<String> attributes,AtomicInteger position,
-                                                        List<Relation> factsByRule,
-                                                        NavigableMap<String, List<String>> mapConstants, Literal literal,
-                                                        AtomicBoolean exhaustiveSearch,
-                                                        List<Map.Entry<String, Relation>> historical, boolean repeat,
-                                                        int iteration, Tgd tgd, Map<String, Integer> intents) {
+    static Relation getNextPositivePossibleFact(Map<String, String> mapVariables, Variable variable,
+                                                List<String> attributes,
+                                                AtomicInteger position, List<Relation> factsByRule,
+                                                NavigableMap<String, List<String>> mapConstants,
+                                                Literal literal, AtomicBoolean exhaustiveSearch,
+                                                List<Map.Entry<String, Relation>> historical,
+                                                boolean repeat, int iteration, Tgd tgd, Map<String, Integer> intents,
+                                                AtomicBoolean byMapVariables) {
 
         AtomicReference<Relation> relation = new AtomicReference<>();
 
-        if (mapVariables.containsKey(variable.getName())) {
-            attributes.add(position.get(), mapVariables.get(variable.getName()));
-            relation.set(new Relation(variable.getName(), attributes));
+
+        Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, attributes, historical, repeat,
+                iteration, tgd, intents, mapVariables, variable, byMapVariables);
+
+        if (relationOptional.isPresent()) {
+            relation.set(relationOptional.get());
+            attributes.clear();
+            attributes.addAll(Arrays.asList(relation.get().getAttributes()));
         } else {
+            relation.set(null);
 
-            Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, attributes, historical, repeat,
-                    iteration, tgd, intents);
+            Map.Entry<String, List<String>> lastRule = mapConstants.lastEntry();
 
-            if (relationOptional.isPresent()) {
-                relation.set(relationOptional.get());
-                attributes.clear();
-                attributes.addAll(Arrays.asList(relation.get().getAttributes()));
-            } else {
-                relation.set(null);
+            if (lastRule != null) {
 
-                Map.Entry<String, List<String>> lastRule = mapConstants.lastEntry();
-
-                if (lastRule != null) {
-//                    factsByRule.removeIf(f -> f.getName().equals(lastRule.getKey())
-//                            && Util.sameOrderAttributes(Arrays.asList(f.getAttributes()), lastRule.getValue()));
-
-                    if (factsByRule.stream().anyMatch(f -> f.getName().equals(lastRule.getKey()))) {
-                        exhaustiveSearch.set(true);
-                    }
-
-                    mapVariables.clear();
-                    mapConstants.clear();
-                    attributes.clear();
+                if (factsByRule.stream().anyMatch(f -> f.getName().equals(lastRule.getKey()))) {
+                    exhaustiveSearch.set(true);
                 }
+
+                mapVariables.clear();
+                mapConstants.clear();
+                attributes.clear();
             }
         }
 
-//        if (DEBUG) {
-//            if (relation.get() != null)
-//                System.out.println("relation name retourne: " + relation.get().getName());
-//        }
 
         return relation.get();
     }

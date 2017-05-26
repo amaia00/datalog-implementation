@@ -62,11 +62,11 @@
                 </configuration>
             </plugin>
             <!-- Analyse de code -->
-            <plugin>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <version>3.0.2</version>
-            </plugin>
+            <!--<plugin>-->
+                <!--<artifactId>sonar-maven-plugin</artifactId>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<version>3.0.2</version>-->
+            <!--</plugin>-->
             <!-- Configuration du plugin de couverture de code intégré dans sonar -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -110,5 +110,40 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									org.codehaus.mojo
+        								</groupId>
+        								<artifactId>
+        									javacc-maven-plugin
+        								</artifactId>
+        								<versionRange>
+        									[2.6,)
+        								</versionRange>
+        								<goals>
+        									<goal>javacc</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+									    <execute/>
+									</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
     </build>
 </project>
