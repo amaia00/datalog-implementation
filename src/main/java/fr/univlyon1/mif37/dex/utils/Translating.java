@@ -1,8 +1,8 @@
 package fr.univlyon1.mif37.dex.utils;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import fr.univlyon1.mif37.dex.mapping.*;
 
-import javax.management.relation.Relation;
 import java.util.Collection;
 import java.util.*;
 
@@ -40,12 +40,17 @@ public class Translating {
             //System.out.println(idb.getName());
 
         }
-        for(Tgd tgd : tgds) {
-            //System.out.println(tgd.getRight().getName());
-            isRecursive(tgd);
-            isPositive(tgd);
-            System.out.println(ruleSQL(tgd));
+
+        List<String> rec = getRecursive(tgds);
+        for (Tgd tgd : tgds) {
+            if(!rec.contains(tgd.getRight().getName())){
+                System.out.println(ruleSQL(tgd));
+            }
         }
+        for(String r : rec){
+            System.out.println(ruleSQLRecursive(tgds, r));
+        }
+
 
     }
 
@@ -56,7 +61,10 @@ public class Translating {
      * @return String de creation de table
      */
     public static String createTable(String name, Integer num){
-        String statement = "CREATE TABLE "+name+"( \n";
+        String statement = "";
+        statement += "DROP TABLE "+name+" ;\n";
+        statement += "CREATE TABLE "+name+"( \n";
+
         for (int i = 1; i<=num;i++){
             statement+="\tc"+i+" VARCHAR(150)";
             if(i!=num){statement+=", ";}
@@ -83,7 +91,7 @@ public class Translating {
     }
 
     /**
-     * Une fonction pour déterminer si le code est récursif ou pas
+     * Une fonction pour déterminer si la regle est récursif ou pas
      * @param tgd
      * @return boolean
      */
@@ -96,7 +104,33 @@ public class Translating {
         }
         return false;
     }
+    /*
+    isRecursive pour Tgds
+     */
+    public static boolean isRecursive(Collection<Tgd> tgds){
+        for(Tgd tgd : tgds) {
+            String head = tgd.getRight().getName();
+            for (Literal l : tgd.getLeft()) {
+                if (l.getAtom().getName().equals(head)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
+    public static List<String> getRecursive(Collection<Tgd> tgds){
+        List<String> rec = new ArrayList<>();
+        for(Tgd tgd : tgds) {
+            String head = tgd.getRight().getName();
+            for (Literal l : tgd.getLeft()) {
+                if (l.getAtom().getName().equals(head)) {
+                    rec.add(tgd.getRight().getName());
+                }
+            }
+        }
+        return rec;
+    }
     /**
      * Une fonction pour déterminer si le code est positif ou pas
      * @param tgd
@@ -126,8 +160,29 @@ public class Translating {
         }else{
             statement +=ruleWhere_negative(tgd.getLeft());
         }
+        return statement+";";
+    }
 
-        return statement;
+    public static String ruleSQLRecursive(Collection<Tgd> tgds, String name){
+        String statement = "";
+        statement += "CREATE or REPLACE VIEW V_" + name + " AS\n";
+        statement += "WITH rec_"+name+" AS (";
+        Boolean first = true;
+        for(Tgd tgd : tgds) {
+            if(tgd.getRight().getName().equals(name)){
+                if(first){statement += "(\n";first=false;}else{statement += "UNION ALL (\n";}
+                statement += ruleSelect(tgd);
+                statement += ruleFrom(tgd.getLeft());
+                if (isPositive(tgd)) {
+                    statement += ruleWhere(tgd.getLeft());
+                } else {
+                    statement += ruleWhere_negative(tgd.getLeft());
+                }
+                statement += ")\n";
+            }
+        }
+        statement += ") SELECT * FROM rec_"+name+" ";
+        return statement+";";
     }
 
     /**
@@ -193,7 +248,7 @@ public class Translating {
             }
             i++;
         }
-        return res+"\n";
+        return res+"";
     }
 
 
@@ -232,9 +287,8 @@ public class Translating {
             }
             i++;
         }
-        if(where_list2.size()>0){
-            res+="WHERE ";
-        }
+
+        String where_stm = "";
         for (Map.Entry<String, Map> e : where_list2.entrySet()) {
             Map<String, String> value = e.getValue();
             if(flag_list.get(e.getKey())==true){
@@ -242,7 +296,7 @@ public class Translating {
                 for (Map.Entry<String, String> e2 : value.entrySet()) {
                     if(flag_list2.get(e2.getValue())!=false) {
                         if (k != 0) {res += "AND ";}
-                        res += e2.getKey()+" = "+ e2.getValue() + "\n";
+                        where_stm += e2.getKey()+" = "+ e2.getValue() + "\n";
                         k++;
                     }
                 }
@@ -253,21 +307,24 @@ public class Translating {
                         if(k!=0){
                             res += "AND ";
                         }
-                        res += e2.getKey();
+                        where_stm += e2.getKey();
                         if(u==k){
-                            res += " <> ";
+                            where_stm += " <> ";
                         }else{
-                            res += " = ";
+                            where_stm += " = ";
                         }
-                        res += e2.getValue() + "\n";
+                        where_stm += e2.getValue() + "\n";
                         k++;
                     }
                     if(u!=value.size()-1)
-                        res+="OR ";
+                        where_stm+="OR ";
                 }
             }
         }
-        return res+";\n";
+        if(where_list2.size()>0&&!where_stm.equals("")){
+            res+="WHERE "+where_stm;
+        }
+        return res+"\n";
     }
 
 
@@ -287,38 +344,21 @@ public class Translating {
         return "";
     }
 
-    //    public static String findUnusedVariable(String var, Collection<Literal> left,
-    //List<String> temp){
-//        int i = 1;
-//        for(Literal l : left){
-//            int j = 1;
-//            for(Variable v : l.getAtom().getVars()){
-//                if(!temp.contains(l.getAtom().getName()+i+".c"+j)){
-//                    if(v.getName().equals(var)){
-//                        return l.getAtom().getName()+i+".c"+j;
-//                    }
-//                    j++;
-//                }
-//            }
-//            i++;
-//        }
-//        return "";
-//    }
 
-        public static String findUnusedVariable2(String var,String var_name,
-                Collection<Literal> left, List<String> temp){
-            int i = 1;
-            for(Literal l : left){
-                int j = 1;
-                for(Variable v : l.getAtom().getVars()){
-                    if(v.getName().equals(var)&&!(var_name.equals(l.getAtom().getName()+i
-                            +".c"+j))){
-                        return l.getAtom().getName()+i+".c"+j;
-                    }
-                    j++;
+    public static String findUnusedVariable2(String var,String var_name,
+                                             Collection<Literal> left, List<String> temp){
+        int i = 1;
+        for(Literal l : left){
+            int j = 1;
+            for(Variable v : l.getAtom().getVars()){
+                if(v.getName().equals(var)&&!(var_name.equals(l.getAtom().getName()+i
+                        +".c"+j))){
+                    return l.getAtom().getName()+i+".c"+j;
                 }
-                i++;
+                j++;
             }
-            return "";
+            i++;
         }
+        return "";
     }
+}
