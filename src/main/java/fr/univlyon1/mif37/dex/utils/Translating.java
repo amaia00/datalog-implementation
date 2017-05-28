@@ -303,7 +303,7 @@ public class Translating {
                     int k = 0;
                     for (Map.Entry<String, String> e2 : value.entrySet()) {
                         if(k!=0){
-                            res += "AND ";
+                            where_stm += "AND ";
                         }
                         where_stm += e2.getKey();
                         if(u==k){
