@@ -5,6 +5,7 @@ import fr.univlyon1.mif37.dex.mapping.Relation;
 import fr.univlyon1.mif37.dex.mapping.Tgd;
 import fr.univlyon1.mif37.dex.utils.EvaluationSemipositiveOrStratified;
 import fr.univlyon1.mif37.dex.utils.Stratified;
+import fr.univlyon1.mif37.dex.utils.Translating;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
@@ -49,6 +50,40 @@ public class EvaluationSemipositiveOrStratifiedTest {
             exception = e;
         }
 
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE link ;\n" +
+                "CREATE TABLE link( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");INSERT INTO link VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO link VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Debourg');\n" +
+                "CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c1 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c2 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_unreachable AS\n" +
+                "SELECT metro1.c1 as c1, metro2.c1 as c2\n" +
+                "FROM metro metro1, metro metro2, reachable reachable3\n" +
+                "WHERE reachable3.c2 <> metro2.c1\n" +
+                "AND reachable3.c1 = metro1.c1\n" +
+                "OR reachable3.c2 = metro2.c1\n" +
+                "AND reachable3.c1 <> metro1.c1\n" +
+                "\n" +
+                ";CREATE or REPLACE VIEW V_reachable AS\n" +
+                "WITH rec_reachable AS ((\n" +
+                "SELECT link1.c1 as c1, link1.c2 as c2\n" +
+                "FROM link link1\n" +
+                ")\n" +
+                "UNION ALL (\n" +
+                "SELECT link1.c1 as c1, reachable2.c2 as c2\n" +
+                "FROM link link1, reachable reachable2\n" +
+                "WHERE link1.c2 = reachable2.c1 \n" +
+                ")\n" +
+                ") SELECT * FROM rec_reachable ;",sql);
         assertNull(exception);
     }
 
@@ -83,6 +118,37 @@ public class EvaluationSemipositiveOrStratifiedTest {
             e.printStackTrace();
             exception = e;
         }
+
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE metro ;\n" +
+                "CREATE TABLE metro( \n" +
+                "\tc1 VARCHAR(150)\n" +
+                ");DROP TABLE reachable ;\n" +
+                "CREATE TABLE reachable( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");INSERT INTO metro VALUES ('Charpennes');\n" +
+                "INSERT INTO metro VALUES ('Perrache');\n" +
+                "INSERT INTO metro VALUES ('PartDieu');\n" +
+                "INSERT INTO metro VALUES ('Debourg');\n" +
+                "INSERT INTO reachable VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Debourg');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Perrache');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Charpennes');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Debourg');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'PartDieu');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Perrache');\n" +
+                "CREATE or REPLACE VIEW V_unreachable AS\n" +
+                "SELECT metro1.c1 as c1, metro2.c1 as c2\n" +
+                "FROM metro metro1, metro metro2, reachable reachable3\n" +
+                "WHERE reachable3.c2 <> metro2.c1\n" +
+                "AND reachable3.c1 = metro1.c1\n" +
+                "OR reachable3.c2 = metro2.c1\n" +
+                "AND reachable3.c1 <> metro1.c1\n" +
+                "\n" +
+                ";",sql);
 
         assertNull(exception);
     }
@@ -122,6 +188,44 @@ public class EvaluationSemipositiveOrStratifiedTest {
             exception = e;
         }
 
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE link ;\n" +
+                "CREATE TABLE link( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");DROP TABLE reachable ;\n" +
+                "CREATE TABLE reachable( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");INSERT INTO link VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO link VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Debourg');\n" +
+                "INSERT INTO reachable VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Debourg');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'Perrache');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Charpennes');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Debourg');\n" +
+                "INSERT INTO reachable VALUES ('PartDieu', 'PartDieu');\n" +
+                "INSERT INTO reachable VALUES ('Debourg', 'Perrache');\n" +
+                "CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c1 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c2 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_unreachable AS\n" +
+                "SELECT metro1.c1 as c1, metro2.c1 as c2\n" +
+                "FROM metro metro1, metro metro2, reachable reachable3\n" +
+                "WHERE reachable3.c2 <> metro2.c1\n" +
+                "AND reachable3.c1 = metro1.c1\n" +
+                "OR reachable3.c2 = metro2.c1\n" +
+                "AND reachable3.c1 <> metro1.c1\n" +
+                "\n" +
+                ";",sql);
+
         assertNull(exception);
     }
 
@@ -159,6 +263,39 @@ public class EvaluationSemipositiveOrStratifiedTest {
             exception = e;
         }
 
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE q ;\n" +
+                "CREATE TABLE q( \n" +
+                "\tc1 VARCHAR(150)\n" +
+                ");DROP TABLE s ;\n" +
+                "CREATE TABLE s( \n" +
+                "\tc1 VARCHAR(150)\n" +
+                ");DROP TABLE t ;\n" +
+                "CREATE TABLE t( \n" +
+                "\tc1 VARCHAR(150)\n" +
+                ");INSERT INTO q VALUES ('A');\n" +
+                "INSERT INTO s VALUES ('B');\n" +
+                "INSERT INTO t VALUES ('A');\n" +
+                "CREATE or REPLACE VIEW V_p AS\n" +
+                "SELECT q1.c1 as c1\n" +
+                "FROM q q1, r r2\n" +
+                "WHERE q1.c1 <> r2.c1\n" +
+                "\n" +
+                ";CREATE or REPLACE VIEW V_p AS\n" +
+                "SELECT t1.c1 as c1\n" +
+                "FROM t t1, q q2\n" +
+                "WHERE t1.c1 <> q2.c1\n" +
+                "\n" +
+                ";CREATE or REPLACE VIEW V_q AS\n" +
+                "SELECT s1.c1 as c1\n" +
+                "FROM s s1, t t2\n" +
+                "WHERE t2.c1 <> s1.c1\n" +
+                "\n" +
+                ";CREATE or REPLACE VIEW V_r AS\n" +
+                "SELECT t1.c1 as c1\n" +
+                "FROM t t1\n" +
+                ";",sql);
+
         assertNull(exception);
     }
 
@@ -193,6 +330,33 @@ public class EvaluationSemipositiveOrStratifiedTest {
             e.printStackTrace();
             exception = e;
         }
+
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE link ;\n" +
+                "CREATE TABLE link( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");INSERT INTO link VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO link VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Debourg');\n" +
+                "CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c1 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c2 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_reachable AS\n" +
+                "WITH rec_reachable AS ((\n" +
+                "SELECT link1.c1 as c1, link1.c2 as c2\n" +
+                "FROM link link1\n" +
+                ")\n" +
+                "UNION ALL (\n" +
+                "SELECT metro1.c1 as c1, reachable2.c2 as c2\n" +
+                "FROM metro metro1, reachable reachable2\n" +
+                "\n" +
+                ")\n" +
+                ") SELECT * FROM rec_reachable ;",sql);
 
         assertNull(exception);
     }
@@ -230,6 +394,42 @@ public class EvaluationSemipositiveOrStratifiedTest {
             e.printStackTrace();
             exception = e;
         }
+
+        String sql = Translating.translate(m.getEDB(), m.getIDB(), m.getTgds());
+        assertEquals("DROP TABLE link ;\n" +
+                "CREATE TABLE link( \n" +
+                "\tc1 VARCHAR(150), \n" +
+                "\tc2 VARCHAR(150)\n" +
+                ");INSERT INTO link VALUES ('Charpennes', 'Perrache');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Charpennes');\n" +
+                "INSERT INTO link VALUES ('Debourg', 'PartDieu');\n" +
+                "INSERT INTO link VALUES ('PartDieu', 'Debourg');\n" +
+                "CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c1 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_metro AS\n" +
+                "SELECT link1.c2 as c1\n" +
+                "FROM link link1\n" +
+                ";CREATE or REPLACE VIEW V_unreachable AS\n" +
+                "SELECT metro1.c1 as c1, metro2.c1 as c2\n" +
+                "FROM metro metro1, metro metro2, reachable reachable3\n" +
+                "WHERE reachable3.c2 <> metro2.c1\n" +
+                "AND reachable3.c1 = metro1.c1\n" +
+                "OR reachable3.c2 = metro2.c1\n" +
+                "AND reachable3.c1 <> metro1.c1\n" +
+                "\n" +
+                ";CREATE or REPLACE VIEW V_reachable AS\n" +
+                "WITH rec_reachable AS ((\n" +
+                "SELECT link1.c1 as c1, link1.c2 as c2\n" +
+                "FROM link link1\n" +
+                ")\n" +
+                "UNION ALL (\n" +
+                "SELECT link1.c1 as c1, reachable2.c2 as c2\n" +
+                "FROM link link1, reachable reachable2\n" +
+                "WHERE link1.c2 = reachable2.c1 \n" +
+                ")\n" +
+                ") SELECT * FROM rec_reachable ;",sql);
+
         assertNull(exception);
     }
 }
