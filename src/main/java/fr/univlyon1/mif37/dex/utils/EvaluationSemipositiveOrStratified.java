@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version 1.0
  * @since 1.0 4/21/17.
  */
-public class EvaluationStratifie {
+public class EvaluationSemipositiveOrStratified {
     private static final boolean DEBUG = false;
 
     private static final List<Map.Entry<String, Relation>> historical = new ArrayList<>();
@@ -21,7 +21,7 @@ public class EvaluationStratifie {
     private static final NavigableMap<String, List<String>> mapConstants = new TreeMap<>();
     private static final Map<String, String> mapVariables = new HashMap<>();
 
-    private EvaluationStratifie() {
+    private EvaluationSemipositiveOrStratified() {
         /* On cache le constructeur */
     }
 

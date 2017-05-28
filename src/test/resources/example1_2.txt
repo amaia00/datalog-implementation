@@ -1,4 +1,4 @@
--- Example not positif
+-- Example stratified
 
 EDB
 link(Charpennes, Perrache)

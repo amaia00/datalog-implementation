@@ -62,34 +62,6 @@ public class Stratified {
 
         return positif.get();
     }
-// TODO: isSemiPositif
-//    static Relation isSemiPositif(Collection<Relation> edbs, Tgd tgd) {
-//
-//        boolean is_true = false;
-//        boolean is_false = false;
-//
-//        for (Relation edb : edbs) {
-//            String fact = edb.getName();
-//            Collection<Literal> left = tgd.getLeft();
-//            for (Literal l : left) {
-//                if (l.getAtom().getName().equals(fact)) {
-//                    // si on trouve dans la règle un fait nie
-//                    if (!l.getFlag()) {
-//                        is_true = true;
-//                    } else {
-//                        // si on le retrouve positif
-//                        is_false = true;
-//                    }
-//                }
-//            }
-//
-//            if (is_false && !is_true) {
-//                return edb;
-//            }
-//        }
-//
-//        return null;
-//    }
 
     /**
      * C'est stratified s'il a une negation dans le corps de'une regle d'une autre regle qui a été
@@ -114,25 +86,6 @@ public class Stratified {
         return stratified.get();
     }
 
-//    public static Mapping fromSemipositiveToPositive(Mapping mapping) {
-//        List<Relation> newEdbs = new ArrayList<>();
-//
-//        mapping.getTgds().forEach(tgd -> {
-//            Relation relation = isSemiPositif(mapping.getEDB(), tgd);
-//            String name = "new" + relation.getName();
-//
-//            List<String> attributs = Arrays.asList(relation.getAttributes());
-//            Relation newRelation = new Relation(name, attributs);
-//
-//
-//        });
-//
-//        Mapping mappingPositif = new Mapping();
-//        mappingPositif.getTgds().addAll(mapping.getTgds());
-//
-//        return mapping;
-//    }
-
     /**
      * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié.
      * <br/>
@@ -144,9 +97,10 @@ public class Stratified {
      */
     public static boolean isSemiPositif(Collection<Relation> edbs, Collection<Tgd> tgds) {
 
+        boolean isTrue = false;
+        boolean isFalse = false;
+
         for (Relation edb : edbs) {
-            boolean isTrue = false;
-            boolean isFalse = false;
             String fact = edb.getName();
 
             for (Tgd tgd : tgds) {
@@ -161,10 +115,10 @@ public class Stratified {
                     }
                 }
             }
+        }
 
-            if (isFalse && !isTrue) {
-                return false;
-            }
+        if (!isFalse && isTrue) {
+            return false;
         }
 
         return true;
@@ -272,7 +226,6 @@ public class Stratified {
         Map<Integer, List<Object>> slices = Stratified.getSlices(mapping);
 
         for (Map.Entry<Integer, List<Object>> slice : slices.entrySet()) {
-            System.out.println(slice.getKey().toString() + ":");
 
             List<Object> rules = slice.getValue();
             rules.forEach(rule -> {
@@ -287,7 +240,6 @@ public class Stratified {
                         edbByOrderOfEvaluation.put(slice.getKey(), list);
                     }
 
-                    System.out.println(Util.getEDBString(edb));
                 } catch (Exception ex) {
                     //nothing
                 }
@@ -301,7 +253,6 @@ public class Stratified {
                         list.add(tgd);
                         tgdByOrderOfEvaluation.put(slice.getKey(), list);
                     }
-                    System.out.println(Util.getTgdString(tgd));
                 } catch (Exception ex) {
                     //nothing
                 }

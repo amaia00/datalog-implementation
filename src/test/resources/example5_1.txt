@@ -1,3 +1,5 @@
+-- Programme stratified
+
 EDB
 link(Charpennes,Perrache) 
 link(PartDieu,Charpennes) 

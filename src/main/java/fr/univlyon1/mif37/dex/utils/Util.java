@@ -214,4 +214,45 @@ public class Util {
 
         return uniqueList;
     }
+
+    public static void printTgds(Collection<Tgd> tgds) {
+        /* get TGBS*/
+        System.out.println("TGBS:");
+        for (Tgd tgd : tgds) {
+            System.out.println();
+            System.out.print(tgd.getRight().getName() + "(");
+            tgd.getRight().getVars().forEach(v -> System.out.print(v.getName() + ", "));
+            System.out.print(") :- ");
+
+            tgd.getLeft().forEach(l -> {
+                System.out.print(l.getFlag() + " " + l.getAtom().getName() + " (");
+                l.getAtom().getVars().forEach(v -> System.out.print(v.getName() + ", "));
+                System.out.print("), ");
+            });
+        }
+    }
+
+
+    public static void printIdbs(Collection<AbstractRelation> idbs) {
+        /* get IDBS*/
+        System.out.println("IDB: ");
+        for (AbstractRelation idb : idbs) {
+            System.out.println();
+            System.out.print(idb.getName() + "(");
+
+            List<AbstractArgument> attributs = Arrays.asList(idb.getAttributes());
+            attributs.forEach(p -> System.out.print(p.getVar().getName() + ","));
+            System.out.print(")");
+        }
+    }
+
+    public static void printEDBs(Collection<Relation> edbs){
+        System.out.println("EDB: ");
+        for (Relation edb : edbs) {
+            System.out.println();
+            System.out.print(edb.getName() + "(");
+            List<String> attributs = Arrays.asList(edb.getAttributes());
+            attributs.forEach(p -> System.out.print(p + ", "));
+            System.out.print(")");
+        }}
 }

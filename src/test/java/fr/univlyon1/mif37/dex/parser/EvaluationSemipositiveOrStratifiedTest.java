@@ -3,7 +3,7 @@ package fr.univlyon1.mif37.dex.parser;
 import fr.univlyon1.mif37.dex.mapping.Mapping;
 import fr.univlyon1.mif37.dex.mapping.Relation;
 import fr.univlyon1.mif37.dex.mapping.Tgd;
-import fr.univlyon1.mif37.dex.utils.EvaluationStratifie;
+import fr.univlyon1.mif37.dex.utils.EvaluationSemipositiveOrStratified;
 import fr.univlyon1.mif37.dex.utils.Stratified;
 import org.junit.Test;
 
@@ -15,12 +15,11 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class EvaluationSemipositiveTest {
+public class EvaluationSemipositiveOrStratifiedTest {
 
-    // TODO Verifier
     @Test
     public void example1_2() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example1_2.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example1_2.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -37,7 +36,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
@@ -54,7 +53,7 @@ public class EvaluationSemipositiveTest {
 
     @Test
     public void example1_3() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example1_3.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example1_3.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -71,7 +70,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
@@ -85,7 +84,7 @@ public class EvaluationSemipositiveTest {
 
     @Test
     public void example2() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example2.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example2.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -102,7 +101,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
@@ -119,7 +118,7 @@ public class EvaluationSemipositiveTest {
 
     @Test
     public void example2_1() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example2_1.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example2_1.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -136,7 +135,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("r")).count(), 1);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("q")).count(), 2);
@@ -152,10 +151,9 @@ public class EvaluationSemipositiveTest {
     }
 
 
-    // TODO: Verifier je sais pas si c'est correct
     @Test
     public void example3() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example3.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example3.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -172,7 +170,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
@@ -184,10 +182,9 @@ public class EvaluationSemipositiveTest {
     }
 
 
-    // TODO WRONG!!!!!
     @Test
     public void example5_1() throws ParseException {
-        Reader input = new InputStreamReader(EvaluationSemipositiveTest.class.getResourceAsStream("/example5_1.txt"));
+        Reader input = new InputStreamReader(EvaluationSemipositiveOrStratifiedTest.class.getResourceAsStream("/example5_1.txt"));
         MappingParser parser = new MappingParser(input);
         Mapping m = parser.mapping();
         assertNotNull(m);
@@ -204,7 +201,7 @@ public class EvaluationSemipositiveTest {
             Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = edbAndTgdStratums.getValue();
 
             /* Evaluation */
-            List<Relation> allFacts = EvaluationStratifie.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
+            List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
