@@ -92,7 +92,7 @@ public class EvaluationStratifie {
                 factsByRule.addAll(newFacts);
 
                 boolean firstTime = true;
-                int maxIterationsPossibles = factsByRule.size() * 4; //TODO: Voir valeur appropié
+                int maxIterationsPossibles = factsByRule.size() * tgd.getLeft().size();
 
                 historical.clear();
                 intents.clear();
@@ -129,17 +129,8 @@ public class EvaluationStratifie {
                          * On ajoute le nouevau fact
                          */
                         addNewsFact(mapping, attributes, newFacts, counterFacts, tgd);
-
-                        /* On enlève le fait déjà utilisé pour ne pas avoir de doublants et pour finir le boucle.*/
-                        //factsByRule.removeIf(relation1 -> Util.equalsRelation(relation1, relation.get()));
                     }
                 }
-
-                /*
-                 * On ne trouve pas des nouveaux faits, donc on arrête le parcours en assignant la valeur de
-                 * la taille du TGD à la variable particion.
-                 */
-                //partition.set(tgdByOrderOfEvaluation.size() + 1);
             });
 
             /* Après d'avoir ajouter tous les faits possibles pour la partition d'avant on passe à la suivante*/

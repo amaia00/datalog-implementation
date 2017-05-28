@@ -219,6 +219,15 @@ public class Fact {
         historical.removeIf(h -> h.getKey().equals(literalName.concat(String.valueOf(position))));
     }
 
+    /**
+     *
+     * @param literalName
+     * @param position
+     * @param intents
+     * @param historical
+     * @param attributes
+     * @return
+     */
     private static boolean checkIntentsWithHistorical(String literalName, int position,
                                                       Map<String, Integer> intents,
                                                       List<Map.Entry<String, Relation>> historical,
@@ -226,9 +235,11 @@ public class Fact {
 
         int qteIntents = getIntentsByPosition(literalName, position, intents);
 
-        return (qteIntents <= historical.stream().filter(h -> h.getKey().equals(literalName
-                .concat(String.valueOf(position))) && Util.sameOrderAttributes(h.getValue().getAttributes(),
-                attributes)).count());
+//        return (qteIntents <= historical.stream().filter(h -> h.getKey().equals(literalName
+//                .concat(String.valueOf(position))) && Util.sameOrderAttributes(h.getValue().getAttributes(),
+//                attributes)).count());
+
+        return qteIntents <= 1;
     }
 
 

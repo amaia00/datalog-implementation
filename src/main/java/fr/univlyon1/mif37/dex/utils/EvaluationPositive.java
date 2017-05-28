@@ -160,9 +160,8 @@ public class EvaluationPositive {
         AtomicBoolean exhaustiveSearch = new AtomicBoolean();
         exhaustiveSearch.set(true);
 
-        // TODO
         AtomicInteger maxIteration = new AtomicInteger();
-        maxIteration.set(30);
+        maxIteration.set(factsByRule.size());
 
         AtomicInteger iterationCounter = new AtomicInteger();
         iterationCounter.set(0);
