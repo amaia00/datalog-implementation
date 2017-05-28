@@ -13,8 +13,9 @@ public class Translating {
 
     }
 
-    public static void translate(Collection<Relation> edbs, Collection<AbstractRelation>
+    public static String translate(Collection<Relation> edbs, Collection<AbstractRelation>
             idbs, Collection<Tgd> tgds){
+        String result = "";
         Map<String, Integer> tables = new HashMap<>();
         String values = "";
         for(Relation edb : edbs) {
@@ -29,21 +30,21 @@ public class Translating {
         }
         // CREATE Tables Code
         for(Map.Entry<String, Integer> s : tables.entrySet()){
-            System.out.println(createTable(s.getKey(),s.getValue()));
+            result+=createTable(s.getKey(),s.getValue());
         }
         // INSERT values code
-        System.out.println(values);
+        result+=values;
 
         List<String> rec = getRecursive(tgds);
         for (Tgd tgd : tgds) {
             if(!rec.contains(tgd.getRight().getName())){
-                System.out.println(ruleSQL(tgd));
+                result+=ruleSQL(tgd);
             }
         }
         for(String r : rec){
-            System.out.println(ruleSQLRecursive(tgds, r));
+            result+=ruleSQLRecursive(tgds, r);
         }
-
+        return result;
 
     }
 

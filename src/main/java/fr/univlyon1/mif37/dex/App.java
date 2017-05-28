@@ -97,7 +97,8 @@ public class App {
 
         /* Translating */
         System.out.println("Translation to SQL:");
-        Translating.translate(mapping.getEDB(), mapping.getIDB(), mapping.getTgds());
+        String sql = Translating.translate(mapping.getEDB(), mapping.getIDB(), mapping.getTgds());
+        System.out.println(sql);
 
     }
 }
