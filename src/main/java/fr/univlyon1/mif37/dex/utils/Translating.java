@@ -34,11 +34,6 @@ public class Translating {
         // INSERT values code
         System.out.println(values);
 
-        for(AbstractRelation idb : idbs) {
-            //System.out.println(idb.getName());
-
-        }
-
         List<String> rec = getRecursive(tgds);
         for (Tgd tgd : tgds) {
             if(!rec.contains(tgd.getRight().getName())){
@@ -250,7 +245,11 @@ public class Translating {
     }
 
 
-    // TODO code optimization
+    /**
+     * Une méthode pour créer les conditions de "WHERE" por les regles negative
+     * @param left
+     * @return String (la lign de "WHERE")
+     */
     public static String ruleWhere_negative(Collection<Literal> left){
         String res = "";
         List<String> temp = new ArrayList<>();
@@ -325,8 +324,12 @@ public class Translating {
         return res+"\n";
     }
 
-
-
+    /**
+     * Pour chercher si une variable exist dans la regle
+     * @param var
+     * @param left
+     * @return
+     */
     public static String findVariable(String var, Collection<Literal> left){
         int i = 1;
         for(Literal l : left){
@@ -342,9 +345,15 @@ public class Translating {
         return "";
     }
 
-
-    public static String findUnusedVariable2(String var,String var_name,
-                                             Collection<Literal> left, List<String> temp){
+    /**
+     * Pour chercher si une variable qui n'est pas dans une prédicat donnes exist dans la règle
+     * @param var
+     * @param var_name
+     * @param left
+     * @param temp
+     * @return
+     */
+    public static String findUnusedVariable2(String var,String var_name, Collection<Literal> left, List<String> temp){
         int i = 1;
         for(Literal l : left){
             int j = 1;
