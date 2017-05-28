@@ -27,6 +27,7 @@ public class EvaluationPositiveTest {
         assert(Stratified.isPositif(m));
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -43,7 +44,10 @@ public class EvaluationPositiveTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
 
         assertEquals(4,m.getEDB().size());
         assertEquals(2,m.getIDB().size());

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class EvaluationSemipositiveOrStratifiedTest {
 
@@ -29,6 +30,7 @@ public class EvaluationSemipositiveOrStratifiedTest {
         assertEquals(5,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -42,12 +44,12 @@ public class EvaluationSemipositiveOrStratifiedTest {
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
 
-
-
-
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
     }
 
 
@@ -63,6 +65,7 @@ public class EvaluationSemipositiveOrStratifiedTest {
         assertEquals(1,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -78,7 +81,10 @@ public class EvaluationSemipositiveOrStratifiedTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
     }
 
 
@@ -94,6 +100,7 @@ public class EvaluationSemipositiveOrStratifiedTest {
         assertEquals(3,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -112,7 +119,10 @@ public class EvaluationSemipositiveOrStratifiedTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
     }
 
 
@@ -128,6 +138,7 @@ public class EvaluationSemipositiveOrStratifiedTest {
         assertEquals(4,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -143,11 +154,12 @@ public class EvaluationSemipositiveOrStratifiedTest {
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("s")).count(), 1);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("p")).count(), 1);
 
-
-
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
     }
 
 
@@ -163,6 +175,7 @@ public class EvaluationSemipositiveOrStratifiedTest {
         assertEquals(4,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -178,7 +191,10 @@ public class EvaluationSemipositiveOrStratifiedTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
     }
 
 
@@ -189,11 +205,13 @@ public class EvaluationSemipositiveOrStratifiedTest {
         Mapping m = parser.mapping();
         assertNotNull(m);
         assert(!Stratified.isPositif(m));
+
         assertEquals(4,m.getEDB().size());
         assertEquals(3,m.getIDB().size());
         assertEquals(5,m.getTgds().size());
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -210,6 +228,8 @@ public class EvaluationSemipositiveOrStratifiedTest {
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+        assertNull(exception);
     }
 }
