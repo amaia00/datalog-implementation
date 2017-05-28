@@ -100,12 +100,19 @@ public class Fact {
                     boolean founded = false;
                     while (!founded || position != positionCounter.get()) {
 
-
+                        /*
+                         * On vérifie si on peut en continuer en utilisant le même fait pour les iterationes
+                         * suivantes
+                         */
                         String literalName = tgd.getLeftList().get(positionCounter.get()).getAtom().getName();
                         if (checkIntentsWithHistorical(literalName, positionCounter.get(), intents, historical,
                                 attributesForThisRule) || stillRules(positionCounter.get(), literalName,
                                 historical)) {
 
+                            /*
+                             * On recupère le dernière valeur du literal, parce qu'on peut continuer en essaiant si
+                             * c'est possible inferer un nouveau fait à partir de cette valeur.
+                             */
                             Optional<Relation> tmp = getLastValue(position, literal, historical);
                             if (tmp.isPresent()) {
                                 relationOptional = tmp;
@@ -116,6 +123,10 @@ public class Fact {
 
                         } else {
 
+                            /*
+                             * On verifie si c'est ce literal qui doit changer ça valeur ou est bien le
+                             * suivant. (Même principe qu'avant)
+                             */
                             if (positionCounter.get() + 1 <= tgd.getLeftPositiveList().size() - 1) {
                                 int newPosition = positionCounter.get() + 1;
                                 String newName = tgd.getLeftList().get(newPosition).getAtom().getName();
@@ -134,10 +145,15 @@ public class Fact {
                                     founded = true;
 
                                 } else {
+                                    /*
+                                     * On enlève tout l'historique de l'autre literal et on change notre valeur
+                                     * par un nouveau fait.
+                                     */
                                     removeFromHistorical(intents, literal, positionCounter.get(), historical,
                                             literalName);
                                 }
                             } else {
+                                // idem
                                 removeFromHistorical(intents, literal, positionCounter.get(), historical, literalName);
                             }
                         }
@@ -158,12 +174,13 @@ public class Fact {
     }
 
     /**
+     * Cette méthode insere un nouveau registre dans l'historique
      *
-     * @param assigned
-     * @param relationOptional
-     * @param literal
-     * @param position
-     * @param historical
+     * @param assigned si un nouveau valeur a été choisi
+     * @param relationOptional la relation choisi
+     * @param literal le literal de la règle
+     * @param position la position du literal
+     * @param historical l'historique
      */
     private static void insertRegistreInHistorical(boolean assigned, Optional<Relation> relationOptional,
                                                    Literal literal, int position,
@@ -178,9 +195,11 @@ public class Fact {
 
     /**
      *
-     * @param position
-     * @param intents
-     * @param literal
+     * Cette méthode insere une nouvelle tentative de fait sur un literal donné
+     *
+     * @param position la position du literal
+     * @param intents les tentatives des faits
+     * @param literal le literal de la règle
      */
     private static void insertIntent(int position, Map<String, Integer> intents,
                                      Literal literal) {
@@ -189,11 +208,13 @@ public class Fact {
     }
 
     /**
-     * @param literalName
-     * @param position
-     * @param intents
+     * Cette méthode calcule la quantité des tentatives des faits sur un literal donné
      *
-     * @return
+     * @param literalName le nom du literal
+     * @param position la position du literal
+     * @param intents les tentatives de faits pour un literal donné
+     *
+     * @return la quantité des tentatives
      */
     private static int getIntentsByPosition(String literalName, int position,
                                             Map<String, Integer> intents) {
@@ -210,11 +231,13 @@ public class Fact {
     }
 
     /**
-     * @param intents
-     * @param literal
-     * @param position
-     * @param historical
-     * @param literalName
+     * Enlève toutes les tentatives d'un fait pour une clause donnée.
+     *
+     * @param intents les tentatives des faits
+     * @param literal le literal
+     * @param position la position du literal
+     * @param historical l'historique
+     * @param literalName le nom du literal
      */
     private static void removeFromHistorical(Map<String, Integer> intents, Literal literal, int position,
                                              List<Map.Entry<String, Relation>> historical, String literalName) {
@@ -225,11 +248,14 @@ public class Fact {
 
     /**
      *
-     * @param literalName
-     * @param position
-     * @param intents
-     * @param historical
-     * @param attributes
+     * Cette méthode vérifie si la quantité des tentatives sur un fait n'est pas supérieur à la
+     * quantité des nouvelles entrées dans l'historique
+     *
+     * @param literalName le nom du literal
+     * @param position la position du literal dans la règle.
+     * @param intents les tentatives des faits
+     * @param historical l'historique
+     * @param attributes les attributes du literal
      * @return
      */
     private static boolean checkIntentsWithHistorical(String literalName, int position,
@@ -246,9 +272,11 @@ public class Fact {
 
     /**
      *
-     * @param position
-     * @param literalName
-     * @param historical
+     * Cette méthode vérifie si la dernière entrée n'est pas vide
+     *
+     * @param position la position du literal dans la règle.
+     * @param literalName le nom du literal
+     * @param historical l'historique
      * @return
      */
     private static boolean stillRules(int position, String literalName,
@@ -272,11 +300,14 @@ public class Fact {
 
 
     /**
-     * @param position
-     * @param literal
-     * @param historical
      *
-     * @return
+     * Cette méthode retourne la dernière entrée dans l'historique avec le literal envoyé.
+     *
+     * @param position la position du literal dans la règle.
+     * @param literal le literal
+     * @param historical l'historique
+     *
+     * @return la dernière entrée
      */
     private static Optional<Relation> getLastValue(int position, Literal literal,
                                                    List<Map.Entry<String, Relation>> historical) {

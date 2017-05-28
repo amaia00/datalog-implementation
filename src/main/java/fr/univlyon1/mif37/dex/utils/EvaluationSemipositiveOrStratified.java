@@ -76,13 +76,13 @@ public class EvaluationSemipositiveOrStratified {
                  * On recupère dans edbsFounded = {t(A), p(b)}
                  */
                 mapping.getEDB().forEach(fact ->
-                                tgd.getLeft().forEach(rule -> {
-                                    if (fact.getName().equals(rule.getAtom().getName())) {
-                                        edbsFounded.add(factCounterAfter.get(), fact);
-                                        factCounterAfter.incrementAndGet();
-                                    }
-                                })
-                                        );
+                    tgd.getLeft().forEach(rule -> {
+                        if (fact.getName().equals(rule.getAtom().getName())) {
+                            edbsFounded.add(factCounterAfter.get(), fact);
+                            factCounterAfter.incrementAndGet();
+                        }
+                    })
+                );
 
 
                 mapConstants.clear();
@@ -142,8 +142,8 @@ public class EvaluationSemipositiveOrStratified {
 
 
     /**
-     * @param tgd          la règle qu'on est en train d'évaluer
-     * @param relation     un nouveau fait possible pour ce règle.
+     * @param tgd      la règle qu'on est en train d'évaluer
+     * @param relation un nouveau fait possible pour ce règle.
      */
     private static void exhaustiveSearchByPredicatSemipositif(Tgd tgd, AtomicReference<Relation> relation,
                                                               int maxIterationsPossibles) {
@@ -235,15 +235,17 @@ public class EvaluationSemipositiveOrStratified {
 
     /**
      *
-     * @param literal
-     * @param attributes
-     * @param exhaustiveSearch
-     * @param tgd
-     * @param relation
-     * @param positionLiteral
+     * Cette méthode cherche les possibles faits que chaque literal peut prendre.
+     *
+     * @param literal le literal de la règle
+     * @param attributes les attributes du literal
+     * @param exhaustiveSearch le drapeau pour verifier si la recherche va continuer
+     * @param tgd les tgd du programme
+     * @param relation la relation definie
+     * @param positionLiteral la position du literal dans la règle
      */
     private static void loopOverRules(Literal literal, List<String> attributes, AtomicBoolean exhaustiveSearch,
-                                      Tgd tgd, AtomicReference<Relation> relation,AtomicInteger positionLiteral) {
+                                      Tgd tgd, AtomicReference<Relation> relation, AtomicInteger positionLiteral) {
         AtomicInteger position = new AtomicInteger();
         position.set(0);
 
@@ -395,34 +397,11 @@ public class EvaluationSemipositiveOrStratified {
                                                 Tgd tgd, AtomicBoolean byMapVariables) {
 
         AtomicReference<Relation> relation = new AtomicReference<>();
-
-
         Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, historical, repeat,
                 iteration, tgd, intents, mapVariables, variable, byMapVariables);
 
-        if (relationOptional.isPresent()) {
-            relation.set(relationOptional.get());
-            attributes.clear();
-            attributes.addAll(Arrays.asList(relation.get().getAttributes()));
-        } else {
-            relation.set(null);
-
-            Map.Entry<String, List<String>> lastRule = mapConstants.lastEntry();
-
-            if (lastRule != null) {
-
-                if (factsByRule.stream().anyMatch(f -> f.getName().equals(lastRule.getKey()))) {
-                    exhaustiveSearch.set(true);
-                }
-
-                mapVariables.clear();
-                mapConstants.clear();
-                attributes.clear();
-            }
-        }
-
-
-        return relation.get();
+        return EvaluationPositive.checkRelationAttributes(relationOptional, relation, attributes, exhaustiveSearch,
+                factsByRule, mapVariables, mapConstants);
     }
 }
 

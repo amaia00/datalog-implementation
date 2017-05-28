@@ -24,6 +24,13 @@ public class EvaluationPositive {
         /* On cache le constructeur */
     }
 
+    /**
+     * @param mapping                le mappind gu programme
+     * @param tgdByOrderOfEvaluation les TGD ordonnés par stratum
+     * @param edbByOrderOfEvaluation les EDB ordonnées par stratum
+     *
+     * @return les nouveaux faits inferes.
+     */
     public static List<Relation> evaluate(Mapping mapping, Map<Integer, List<Tgd>> tgdByOrderOfEvaluation,
                                          Map<Integer, List<Relation>> edbByOrderOfEvaluation) {
         AtomicInteger partition = new AtomicInteger();
@@ -208,12 +215,14 @@ public class EvaluationPositive {
 
     /**
      *
-     * @param literal
-     * @param attributes
-     * @param exhaustiveSearch
-     * @param tgd
-     * @param relation
-     * @param positionLiteral
+     * Cette méthode cherche les possibles faits que chaque literal peut prendre.
+     *
+     * @param literal le literal de la règle
+     * @param attributes les attributes du literal
+     * @param exhaustiveSearch le drapeau pour verifier si la recherche va continuer
+     * @param tgd les tgd du programme
+     * @param relation la relation definie
+     * @param positionLiteral la position du literal dans la règle
      */
     private static void loopOverRules(Literal literal, List<String> attributes, AtomicBoolean exhaustiveSearch,
                                       Tgd tgd, AtomicReference<Relation> relation,AtomicInteger positionLiteral) {
@@ -241,6 +250,7 @@ public class EvaluationPositive {
     }
 
     /**
+     * Ajoute toutes les variables et les constantes dans la structure defini.
      *
      * @param literal le literal
      * @param attributes les attributes du nouevau fait qu'on va inferer.
@@ -306,20 +316,37 @@ public class EvaluationPositive {
                                         int iteration, Tgd tgd, AtomicBoolean byMapVariables) {
 
         AtomicReference<Relation> relation = new AtomicReference<>();
-
-
         Optional<Relation> relationOptional = Fact.getNextFact(factsByRule, literal, historical, repeat,
                 iteration, tgd, intents, mapVariables, variable, byMapVariables);
+
+        return checkRelationAttributes(relationOptional, relation, attributes, exhaustiveSearch, factsByRule,
+                mapVariables, mapConstants);
+    }
+
+    /**
+     *
+     * Cette méthode verifie si on doit continuer la recherche.
+     *
+     * @param relationOptional la relation retourne par nextFact
+     * @param relation la relation qu'on va utiliser
+     * @param attributes les attributes
+     * @param exhaustiveSearch un drapeau qui vérifie si on doit continuer la recherche
+     * @return la relation
+     */
+    static Relation checkRelationAttributes(Optional<Relation> relationOptional, AtomicReference<Relation> relation,
+                                            List<String> attributes, AtomicBoolean exhaustiveSearch,
+                                            List<Relation> factsByRule, Map<String, String> mapVariables,
+                                            NavigableMap<String, List<String>> mapConstants) {
 
         if (relationOptional.isPresent()) {
             relation.set(relationOptional.get());
             attributes.clear();
             attributes.addAll(Arrays.asList(relation.get().getAttributes()));
         } else {
-
             relation.set(null);
 
             Map.Entry<String, List<String>> lastRule = mapConstants.lastEntry();
+
             if (lastRule != null) {
 
                 if (factsByRule.stream().anyMatch(f -> f.getName().equals(lastRule.getKey()))) {
@@ -333,6 +360,7 @@ public class EvaluationPositive {
         }
 
         return relation.get();
+
     }
 }
 

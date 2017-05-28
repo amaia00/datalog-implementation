@@ -122,10 +122,12 @@ public class Util {
 
 
     /**
+     * Cette méthode vérifie que les relations sont égaux avec les même attributes.
+     * Cette méthode ne gére pas les attributes nulls.
      *
-     * @param edb
-     * @param possibleFact
-     * @return
+     * @param edb les edb
+     * @param possibleFact un autre fait
+     * @return si sont ou pas égaux
      */
     public static boolean equalsRelation(Relation edb, Relation possibleFact) {
         return Arrays.equals(new List[]{Arrays.asList(edb.getAttributes())},
@@ -133,6 +135,15 @@ public class Util {
                 && edb.getName().equals(possibleFact.getName());
     }
 
+    /**
+     * Cette méthode vérifie que les attributes soient dans le même ordre dans chaque liste.
+     * Le méthode gére les attributes pas remplis encore.
+     *
+     * @param attributes1 liste des attributes
+     * @param relation la relation
+     * @return si les listes ont les mêmes attributes ou pas.
+     * @return
+     */
     public static boolean sameOrderAttributes(String[] attributes1, Relation relation) {
         if (relation != null ) {
             String[] attributes2 = relation.getAttributes();
@@ -142,6 +153,14 @@ public class Util {
         return false;
     }
 
+    /**
+     * Cette méthode vérifie que les attributes soient dans le même ordre dans chaque liste.
+     * Le méthode gére les attributes pas remplis encore.
+     *
+     * @param relation la relation
+     * @param attributes2 liste des attributes
+     * @return si les listes ont les mêmes attributes ou pas.
+     */
     public static boolean sameOrderAttributes(Relation relation, List<String> attributes2) {
         if (relation != null ) {
             String[] attributes1 = relation.getAttributes();
@@ -153,30 +172,36 @@ public class Util {
     }
 
     /**
+     * Cette méthode vérifie que les attributes soient dans le même ordre dans chaque liste.
+     * Le méthode gére les attributes pas remplis encore.
      *
-     * @param attributes1
-     * @param attributes2
-     * @return
+     * @param attributes1 liste des attributes
+     * @param attributes2 liste des attributes
+     * @return si les listes ont les mêmes attributes ou pas.
      */
     public static boolean sameOrderAttributes(String[] attributes1, String[] attributes2) {
         return sameOrderAttributes(Arrays.asList(attributes1), Arrays.asList(attributes2));
     }
 
     /**
+     * Cette méthode vérifie que les attributes soient dans le même ordre dans chaque liste.
+     * Le méthode gére les attributes pas remplis encore.
      *
-     * @param attributes1
-     * @param attributes2
-     * @return
+     * @param attributes1 liste des attributes
+     * @param attributes2 liste des attributes
+     * @return si les listes ont les mêmes attributes ou pas.
      */
     public static boolean sameOrderAttributes(String[] attributes1, List<String> attributes2) {
         return sameOrderAttributes(Arrays.asList(attributes1), attributes2);
     }
 
     /**
+     * Cette méthode vérifie que les attributes soient dans le même ordre dans chaque liste.
+     * Le méthode gére les attributes pas remplis encore.
      *
-     * @param attributes1
-     * @param attributes2
-     * @return
+     * @param attributes1 liste des attributes
+     * @param attributes2 liste des attributes
+     * @return si les listes ont les mêmes attributes ou pas.
      */
     public static boolean sameOrderAttributes(List<Object> attributes1, List<String> attributes2) {
         Iterator<Object> iteratorRelation1 = attributes1.iterator();
@@ -204,9 +229,10 @@ public class Util {
     }
 
     /**
+     * Cette méthode enlève les doublants
      *
-     * @param facts
-     * @return
+     * @param facts tous les faits
+     * @return la liste de faits sans doublants
      */
     static List<Relation> removeDuplicates(List<Relation> facts) {
         List<Relation> uniqueList = new ArrayList<>();
@@ -218,6 +244,10 @@ public class Util {
         return uniqueList;
     }
 
+    /**
+     *  Methode pour imprimer les TGDB dans la console.
+     * @param tgds les TGDB du programme
+     */
     public static void printTgds(Collection<Tgd> tgds) {
         /* get TGBS*/
         System.out.println("TGBS:");
@@ -235,7 +265,10 @@ public class Util {
         }
     }
 
-
+    /**
+     * Methode pour imprimer les IDB dans la console.
+     * @param idbs les idb du programme
+     */
     public static void printIdbs(Collection<AbstractRelation> idbs) {
         /* get IDBS*/
         System.out.println("IDB: ");
@@ -249,6 +282,10 @@ public class Util {
         }
     }
 
+    /**
+     * Methode pour imprimer les EDB dans la console.
+     * @param edbs les edb du programme
+     */
     public static void printEDBs(Collection<Relation> edbs){
         System.out.println("EDB: ");
         for (Relation edb : edbs) {

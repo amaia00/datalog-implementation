@@ -9,7 +9,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * TODO: Add comments
+ * Cette classe offri des fonctiones pour déterminer le type de programme:
+ * <ul>
+ *     <li>Positif</li>
+ *     <li>Stratifié</li>
+ *     <li>Semi-positive</li>
+ * </ul>
  *
  * @author Amaia Nazábal
  * @version 1.0
@@ -20,7 +25,6 @@ public class Stratified {
     private Stratified() {
         /* On cache le constructeur*/
     }
-
 
     /**
      * Que dans la règle on ne trouve pas des variables dans le head qui ne sont pas dans le corps,
@@ -65,8 +69,9 @@ public class Stratified {
 
     /**
      * C'est stratified s'il a une negation dans le corps de'une regle d'une autre regle qui a été
-     * définie avant
+     * définie avant, et si le programme accompli la condition de surete.
      * <br/>
+     * Ref.: example1_2.txt
      *
      * @param mapping du programme
      * @return si le programme est stratifié ou pas
@@ -82,13 +87,13 @@ public class Stratified {
         )) {
             stratified.set(true);
         }
-        return stratified.get();
+        return stratified.get() && safeConfition(mapping);
     }
 
     /**
      * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié.
      * <br/>
-     * Ref: Example1_3.txt
+     * Ref: example1_3.txt
      *
      * @param edbs les faits du programme
      * @param tgds les regles du programme
@@ -206,10 +211,10 @@ public class Stratified {
     }
 
     /**
-     * TODO add comment supprimer logs print
+     * Cette méthode retourne la liste des faits et règles par ordre de stratum.
      *
-     * @param mapping
-     * @return
+     * @param mapping le mapping du programme
+     * @return un map avec les faits et tgds par ordre de stratum
      */
     public static AbstractMap.SimpleEntry<Map, Map> getRulesByStratum(Mapping mapping) throws Exception {
         Map<Integer, List<Tgd>> tgdByOrderOfEvaluation = new HashMap<>();
