@@ -2,6 +2,5 @@
 target
 .DS_Store
 mif37-dex.iml
-
-bin/*
-des_scripts/
+bin
+des_scripts
