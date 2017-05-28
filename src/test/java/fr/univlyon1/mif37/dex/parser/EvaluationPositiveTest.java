@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class EvaluationPositiveTest {
 
@@ -37,7 +38,7 @@ public class EvaluationPositiveTest {
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
 
 
         } catch (Exception e) {
@@ -59,6 +60,7 @@ public class EvaluationPositiveTest {
         assert(Stratified.isPositif(m));
 
         Map.Entry<Map, Map> edbAndTgdStratums;
+        Exception exception = null;
         try {
             edbAndTgdStratums = Stratified.getRulesByStratum(m);
 
@@ -68,14 +70,18 @@ public class EvaluationPositiveTest {
             /* Evaluation */
             List<Relation> allFacts = EvaluationPositive.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
+
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("creachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
 
 
         } catch (Exception e) {
             e.printStackTrace();
+            exception = e;
         }
+
+        assertNull(exception);
 
         assertEquals(11,m.getEDB().size());
         assertEquals(1,m.getIDB().size());

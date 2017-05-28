@@ -90,8 +90,9 @@ public class Util {
         counter.set(-1);
 
         Arrays.asList(edb.getAttributes()).forEach(v -> {
-            if (counter.incrementAndGet() < edb.getAttributes().length)
-                toString.append(v).append(", ");
+            toString.append(v);
+            if (counter.incrementAndGet() < edb.getAttributes().length - 1)
+                toString.append(", ");
         });
         toString.append(")");
 
@@ -130,6 +131,25 @@ public class Util {
         return Arrays.equals(new List[]{Arrays.asList(edb.getAttributes())},
                 new List[]{Arrays.asList(possibleFact.getAttributes())})
                 && edb.getName().equals(possibleFact.getName());
+    }
+
+    public static boolean sameOrderAttributes(String[] attributes1, Relation relation) {
+        if (relation != null ) {
+            String[] attributes2 = relation.getAttributes();
+            return sameOrderAttributes(Arrays.asList(attributes1), Arrays.asList(attributes2));
+        }
+
+        return false;
+    }
+
+    public static boolean sameOrderAttributes(Relation relation, List<String> attributes2) {
+        if (relation != null ) {
+            String[] attributes1 = relation.getAttributes();
+
+            return sameOrderAttributes(Arrays.asList(attributes1), attributes2);
+        }
+
+        return false;
     }
 
     /**
@@ -181,23 +201,6 @@ public class Util {
         }
 
         return true;
-    }
-
-    /**
-     *
-     * @param attributesOfRule
-     * @param variableValue
-     * @param position
-     * @return
-     */
-    public static boolean sameAttributeAtThePosition(String[] attributesOfRule, String variableValue, int position) {
-        List<String> attributes = Arrays.asList(attributesOfRule);
-        if (position <= attributes.size()) {
-            if (attributes.get(position).equals(variableValue))
-                return true;
-        }
-
-        return false;
     }
 
     /**

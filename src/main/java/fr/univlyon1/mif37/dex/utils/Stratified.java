@@ -67,7 +67,6 @@ public class Stratified {
      * C'est stratified s'il a une negation dans le corps de'une regle d'une autre regle qui a été
      * définie avant
      * <br/>
-     * Ref: example5.txt
      *
      * @param mapping du programme
      * @return si le programme est stratifié ou pas
@@ -89,7 +88,7 @@ public class Stratified {
     /**
      * Un programme c'est semipositif si il existe un règle dans laquelle il y a un fait qui est nié.
      * <br/>
-     * Ref: Example2.txt
+     * Ref: Example1_3.txt
      *
      * @param edbs les faits du programme
      * @param tgds les regles du programme
@@ -107,21 +106,14 @@ public class Stratified {
                 Collection<Literal> left = tgd.getLeft();
                 for (Literal l : left) {
                     if (l.getAtom().getName().equals(fact)) {
-                        if (l.getFlag()) {
-                            isTrue = true;
-                        } else {
-                            isFalse = true;
-                        }
+                        isTrue = l.getFlag();
+                        isFalse = !l.getFlag();
                     }
                 }
             }
         }
 
-        if (!isFalse && isTrue) {
-            return false;
-        }
-
-        return true;
+        return (!isFalse && isTrue);
     }
 
     /**

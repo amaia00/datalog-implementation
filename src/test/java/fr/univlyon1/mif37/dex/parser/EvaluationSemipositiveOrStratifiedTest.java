@@ -39,8 +39,8 @@ public class EvaluationSemipositiveOrStratifiedTest {
             List<Relation> allFacts = EvaluationSemipositiveOrStratified.evaluate(m, tgdByOrderOfEvaluation, edbByOrderOfEvaluation);
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 9);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
 
 
 
@@ -205,8 +205,8 @@ public class EvaluationSemipositiveOrStratifiedTest {
 
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("link")).count(), 4);
             assertEquals(allFacts.stream().filter(f -> f.getName().equals("metro")).count(), 4);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 9);
-            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("unreachable")).count(), 7);
+            assertEquals(allFacts.stream().filter(f -> f.getName().equals("reachable")).count(), 9);
 
         } catch (Exception e) {
             e.printStackTrace();

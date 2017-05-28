@@ -55,7 +55,7 @@ public class Fact {
                                 .equals(edb.getName()) && Util.sameOrderAttributes(edb.getAttributes(),
                                 attributesForThisRule) && historical.stream().noneMatch(h -> h.getKey().equals(edb.getName()
                                 .concat(String.valueOf(position))) && Util.sameOrderAttributes(edb.getAttributes(),
-                                h.getValue().getAttributes()))).findFirst();
+                                h.getValue()))).findFirst();
 
                 assigned = relationOptional.isPresent();
                 if (assigned)
@@ -74,7 +74,8 @@ public class Fact {
                                 .concat(String.valueOf(position))) && Util.sameOrderAttributes(edb.getAttributes(),
                                 h.getValue().getAttributes()))).findFirst();
 
-                assigned = relationOptional.isPresent();
+                //assigned = relationOptional.isPresent();
+                assigned = true;
 
                 /*
                  *  Si n'est pas le dernière sous-règle on va vérifier d'abord qu'on a déjà essaie toutes les valeurs
@@ -102,7 +103,8 @@ public class Fact {
 
                         String literalName = tgd.getLeftList().get(positionCounter.get()).getAtom().getName();
                         if (checkIntentsWithHistorical(literalName, positionCounter.get(), intents, historical,
-                                attributesForThisRule)) {
+                                attributesForThisRule) || stillRules(positionCounter.get(), literalName,
+                                historical)) {
 
                             Optional<Relation> tmp = getLastValue(position, literal, historical);
                             if (tmp.isPresent()) {
@@ -119,7 +121,8 @@ public class Fact {
                                 String newName = tgd.getLeftList().get(newPosition).getAtom().getName();
 
                                 if (checkIntentsWithHistorical(newName, newPosition, intents, historical,
-                                        attributesForThisRule)) {
+                                        attributesForThisRule)|| stillRules(newPosition, newName,
+                                        historical)) {
 
 
                                     Optional<Relation> tmp = getLastValue(position, literal, historical);
@@ -149,7 +152,7 @@ public class Fact {
             insertRegistreInHistorical(assigned, relationOptional, literal, position, historical);
         }
 
-        insertIntent(relationOptional, position, intents, literal);
+        insertIntent(position, intents, literal);
 
         return relationOptional;
     }
@@ -165,22 +168,22 @@ public class Fact {
     private static void insertRegistreInHistorical(boolean assigned, Optional<Relation> relationOptional,
                                                    Literal literal, int position,
                                                    List<Map.Entry<String, Relation>> historical) {
-        if (assigned) {
+        if (assigned && relationOptional.isPresent()) {
             historical.add(historical.size(), new AbstractMap.SimpleEntry<>(literal.getAtom().getName()
                     .concat(String.valueOf(position)), relationOptional.get()));
-        }
+        } else if (!relationOptional.isPresent())
+            historical.add(historical.size(), new AbstractMap.SimpleEntry<>(literal.getAtom().getName()
+                    .concat(String.valueOf(position)), null));
     }
 
     /**
      *
-     * @param relationOptional
      * @param position
      * @param intents
      * @param literal
      */
-    private static void insertIntent(Optional<Relation> relationOptional, int position, Map<String, Integer> intents,
+    private static void insertIntent(int position, Map<String, Integer> intents,
                                      Literal literal) {
-        if (!relationOptional.isPresent())
             intents.put(literal.getAtom().getName().concat(String.valueOf(position)),
                     intents.getOrDefault(literal.getAtom().getName().concat(String.valueOf(position)), 0) + 1);
     }
@@ -215,6 +218,7 @@ public class Fact {
      */
     private static void removeFromHistorical(Map<String, Integer> intents, Literal literal, int position,
                                              List<Map.Entry<String, Relation>> historical, String literalName) {
+
         intents.put(literal.getAtom().getName().concat(String.valueOf(position)), -1);
         historical.removeIf(h -> h.getKey().equals(literalName.concat(String.valueOf(position))));
     }
@@ -232,14 +236,38 @@ public class Fact {
                                                       Map<String, Integer> intents,
                                                       List<Map.Entry<String, Relation>> historical,
                                                       List<String> attributes) {
-
         int qteIntents = getIntentsByPosition(literalName, position, intents);
 
-//        return (qteIntents <= historical.stream().filter(h -> h.getKey().equals(literalName
-//                .concat(String.valueOf(position))) && Util.sameOrderAttributes(h.getValue().getAttributes(),
-//                attributes)).count());
+        return (qteIntents <= historical.stream().filter(h -> h.getKey().equals(literalName
+                .concat(String.valueOf(position))) && Util.sameOrderAttributes(h.getValue(),
+                attributes)).count());
 
-        return qteIntents <= 1;
+    }
+
+    /**
+     *
+     * @param position
+     * @param literalName
+     * @param historical
+     * @return
+     */
+    private static boolean stillRules(int position, String literalName,
+                                      List<Map.Entry<String, Relation>> historical){
+
+        Relation relation = null;
+        try {
+            Collections.reverse(historical);
+
+            relation = historical.stream().filter(h -> h.getKey()
+                    .equals(literalName.concat(String.valueOf(position))))
+                    .findFirst().get().getValue();
+            Collections.reverse(historical);
+        } catch (NoSuchElementException e) {
+            Collections.reverse(historical);
+        }
+
+
+        return historical.isEmpty() || relation != null;
     }
 
 
@@ -269,6 +297,12 @@ public class Fact {
     }
 
 
+    /**
+     *
+     * @param literal
+     * @param mapVariables
+     * @return
+     */
     private static List<String> getAttributesForThisRule(Literal literal, Map<String, String> mapVariables) {
         List<String> attributesForThisRule = new ArrayList<>();
         AtomicInteger positionAttribute = new AtomicInteger();
